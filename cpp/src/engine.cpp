@@ -51,8 +51,9 @@ Matrix covariance(const Matrix& input,std::size_t n,double* correction) {
 Risk risk(const Vector& w,const Matrix& input,bool autodiff) {
     weights(w); double correction=0; Matrix s=covariance(input,w.size(),&correction);
     const Vector sw=s*w;
-    const double v=std::max(0.0,w.dot(sw));
-    if(!std::isfinite(v)) throw std::overflow_error("nonfinite variance");
+    const double raw_variance=w.dot(sw);
+    if(!std::isfinite(raw_variance)) throw std::overflow_error("nonfinite variance");
+    const double v=std::max(0.0,raw_variance);
     const double sigma=std::sqrt(v);
     if(sigma==0) return {v,0,std::nullopt,std::nullopt,correction};
     Vector g;

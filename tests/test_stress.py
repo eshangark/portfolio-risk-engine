@@ -27,6 +27,7 @@ class StressTests(unittest.TestCase):
 
     def test_projection_extreme_dynamic_range(self):
         for magnitude in (1e20,1e100,1e300):
+            assert_allclose(core.project_capped_simplex([0,magnitude,magnitude],[1,1,1],1),[0,.5,.5],atol=1e-13)
             assert_allclose(core.project_capped_simplex([0,magnitude],[1,1],1),[0,1],atol=1e-13)
             assert_allclose(core.project_capped_simplex([magnitude,0],[1,1],1),[1,0],atol=1e-13)
             assert_allclose(core.project_capped_simplex([-magnitude,0,magnitude],[1,1,.25],1),[0,.75,.25],atol=1e-13)

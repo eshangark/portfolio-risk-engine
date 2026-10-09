@@ -48,15 +48,19 @@ def contribution_backtest(returns, window=126, interval=21, method='ledoit_wolf'
                 'scaled_projected_gradient_norm':float(solution['scaled_projected_gradient_norm'])})
         before=float(holdings.sum()); equal_before=float(baseline.sum())
         holdings*=1+values[i]; baseline*=1+values[i]
-        if not np.isfinite(holdings).all() or not np.isfinite(baseline).all() or min(holdings.sum(),baseline.sum())<=0:
+        if (not np.isfinite(holdings).all() or not np.isfinite(baseline).all()
+                or not np.isfinite([holdings.sum(),baseline.sum()]).all()
+                or min(holdings.sum(),baseline.sum())<=0):
             raise ValueError('Backtest wealth exceeds numerical domain.')
         daily=float(holdings.sum()/before-1); equal_daily=float(baseline.sum()/equal_before-1)
+        if not np.isfinite([daily,equal_daily]).all(): raise ValueError('Backtest returns exceed numerical domain.')
         portfolio_returns.append(daily); equal_returns.append(equal_daily)
         records.append({'date':str(returns.index[i]),'wealth':float(holdings.sum()),
                         'equal_purchase_wealth':float(baseline.sum()),'cumulative_deposits':deposits,
                         'return':daily,'equal_purchase_return':equal_daily})
     def metrics(series,wealth):
         r=np.asarray(series); curve=np.r_[1.,np.cumprod(1+r)]
+        if not np.isfinite(curve).all(): raise ValueError('Time-weighted index exceeds numerical domain.')
         return {'terminal_wealth':float(wealth),'time_weighted_return':float(curve[-1]-1),
             'annualized_volatility':float(np.std(r,ddof=1)*np.sqrt(252)) if len(r)>1 else None,
             'max_drawdown':float(np.min(curve/np.maximum.accumulate(curve)-1))}

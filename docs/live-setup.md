@@ -47,7 +47,10 @@ python -m examples.live_report --feed iex --symbols SPY BND --study --output wor
 These are read-only data requests. The latter runs the predeclared chronological
 protocol; it does not choose windows based on future results or simulate trading.
 Reports remain under ignored `work/`; they are not public research results.
-API calls have not been verified with a live account yet.
+Hosted IEX retrieval was verified on 2026-10-09. The app also exposes the
+chronological variance study and a cash-flow-aware historical contribution
+backtest. Select 2,200 calendar days for the longer study. Backtests stop if
+daily returns are missing; they never silently skip unknown wealth changes.
 
 ## Adjustment audits and revision policy
 
@@ -66,5 +69,5 @@ not implemented because a short overlap cannot rule out arbitrary older revision
 Sources checked October 9, 2026: [Alpaca history](https://docs.alpaca.markets/us/reference/stockbars),
 [corporate-action availability caveat](https://docs.alpaca.markets/us/reference/corporateactions-1),
 [Streamlit secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management).
-Account entitlement, known live action checks and data-display rights remain
+SIP entitlement, known live action checks and data-display rights remain
 separate from software test results. Keep development and the app private.

@@ -42,3 +42,14 @@ class BacktestTests(unittest.TestCase):
             with self.assertRaises(ValueError): contribution_backtest(r,window=10)
         r=self.frame(np.zeros((30,2))); r.index=r.index[::-1]
         with self.assertRaises(ValueError): contribution_backtest(r,window=10)
+
+    def test_unfinished_solver_suppresses_result(self):
+        r=self.frame(np.zeros((30,2)))
+        with self.assertRaisesRegex(ValueError,'did not converge'):
+            contribution_backtest(r,window=10,allocator=lambda *args:{'converged':False})
+
+    def test_wealth_overflow_is_rejected(self):
+        values=np.zeros((20,2)); values[10:]=1e200
+        with np.errstate(over='ignore',invalid='ignore'):
+            with self.assertRaisesRegex(ValueError,'numerical domain'):
+                contribution_backtest(self.frame(values),window=10)

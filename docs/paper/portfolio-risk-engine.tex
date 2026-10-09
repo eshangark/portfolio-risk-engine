@@ -523,6 +523,20 @@ correction inside the box. The baseline projects equal purchase
 fractions onto the feasible set. Zero contribution or zero covariance
 has an immediate feasible optimum.
 
+An extreme-range audit exposed a weakness in scaling by the full score
+range: a difference of order $10^{300}$ can erase a unit budget. The
+implementation now first replaces each upper bound by $\min(u_i,B)$,
+which leaves the feasible set unchanged. Sort scores in descending order
+and choose pivot $p$ where their cumulative capped capacity first reaches
+$B$. At threshold $z_p$, purchased capacity is below $B$; at threshold
+$z_p-nB$, every asset at or above the pivot is saturated, giving capacity
+at least $B$. Hence a valid threshold lies in $[z_p-nB,z_p]$.
+After shifting by $z_p$ and scaling by $B$, clip scores to $[-n,n]$:
+clipped extremes must be zero or saturated throughout this threshold
+interval. Bisection therefore retains the budget geometry independently
+of the original score range. This argument concerns exact arithmetic;
+finite-precision residual correction and explicit diagnostics remain necessary.
+
 To see why this step descends, let \(d=y^{k+1}-y^k\). Projection
 optimality gives \(\nabla F(y^k)^Td\le-\|d\|^2/\eta\). The
 Lipschitz-gradient bound then gives
@@ -690,14 +704,20 @@ reproducibility}\label{numerical-verification-and-reproducibility}
 
 \subsection{Evidence and reproduction}\label{evidence-and-reproduction}
 
-The initial 13 NumPy reference tests passed locally on macOS arm64 with
-Python 3.12.14 and NumPy 2.3.5. On October 9, 2026, all 27 tests passed
-on Ubuntu with both Python 3.10 and 3.12 at commit \texttt{8438207}.
-This includes seven C++ numerical tests, five data/estimator tests and
-two Streamlit interaction tests. Native sanitizer checks and both
-example reports also passed in
-\href{https://github.com/eshangark/portfolio-risk-engine/actions/runs/37956387933}{workflow
-37956387933}.
+At revision \texttt{cb737b9b},
+\href{https://github.com/eshangark/portfolio-risk-engine/actions/runs/37997031520}{run 37997031520}
+passed all 42 tests on Python 3.10 and 3.12, native sanitizers and all report
+commands. The added audit checks 48 randomized risk instances, 48 allocation
+solves against OSQP and an independent linear-oracle convex certificate,
+covariance/dollar scales from $10^{-200}$ to $10^{200}$, extreme score differences,
+negative risk contributions and nullspace portfolios. It also checks exact
+historical-prefix invariance and independently known cash-flow ledgers.
+For a feasible $w$ and a linear-oracle minimizer $v$ of $\nabla f(w)^Tv$,
+convexity yields
+\[0\le f(w)-f(w^*)\le \nabla f(w)^T(w-v).\]
+The oracle fills the available capacity in increasing gradient order; it
+does not reuse the projection routine. These bounded tests support the
+implemented behavior, not a proof of reliability for every floating-point input.
 
 Install a C++17 compiler, CMake and Eigen3, then run from the repository
 root:
@@ -803,7 +823,76 @@ variance derivative favors additional B, but the no-sale bound prevents
 reducing A below .5. The optimum is at a boundary despite a nonzero
 unconstrained gradient.
 
-\subsection{Remaining empirical work}\label{remaining-empirical-work}
+\subsection{Historical evaluation}\label{remaining-empirical-work}
+\subsection*{Historical contribution backtest}
+The cumulative evaluator is separate from the fixed-holdings variance study.
+At each decision date it fits Ledoit--Wolf covariance on the preceding 126
+observations, before consuming that day's return. Initial holdings are 1,000
+dollars divided equally; every 21 observations adds 200 dollars. There are
+no sales and no concentration cap below 100\%. The comparator makes equal-dollar
+purchases on the same dates with the same cash flows. Neither policy chooses
+parameters from future outcomes.
+
+Let $h_t^-=h_{t-1}+x_t$ be holdings after any contribution but before the
+daily return. Then $h_t=h_t^-\odot(\mathbf1+r_t)$ and the portfolio return is
+$R_t=\mathbf1^Th_t/\mathbf1^Th_t^- -1$. The time-weighted index
+$I_T=\prod_t(1+R_t)$ removes the direct deposit effect. Drawdown is
+$\min_t\{I_t/\max_{0\le s\le t}I_s-1\}$ with $I_0=1$; annualized
+volatility is $\sqrt{252}\,s(R_t)$. Terminal wealth is reported separately
+because it includes deposits. Holdings drift daily; this differs from the
+constant-weight portfolio used in variance calibration.
+
+Zero returns must give terminal wealth equal to initial wealth plus deposits,
+zero time-weighted return and zero drawdown. A common 1\% daily return has
+a closed-form wealth ledger, independently tested. Changing observations
+after a cutoff must leave the earlier cash-flow ledger and decisions exactly
+unchanged. Contiguous input arrays fix layout-dependent reduction differences
+without weakening that exact-prefix test. Missing market return dates suppress
+the hosted backtest, since skipping them would omit unknown wealth changes.
+Fees, taxes, spreads, executable prices, point-in-time vintages and survivorship
+effects are not modeled.
+
+The seeded four-regime Gaussian stress simulation contains 1,008 observations
+and four assets. It evaluates 882 observations and 42 contributions totaling
+8,400 dollars. On the Python 3.10 runner, optimized / equal-purchase terminal
+wealth was 8,460.41 / 8,507.02 dollars, time-weighted return 1.3306\% / 2.3450\%,
+volatility 23.3873\% / 23.2907\%, and drawdown $-38.0320\%$ / $-37.0318\%$.
+The optimized policy was worse on these realized measures: minimizing fitted
+variance at each contribution is not a guarantee of lower subsequent variance,
+drawdown or higher return. This is synthetic stress evidence, not market performance.
+
+The extended hosted market-data run used SPY, BND, GLD and QQQ with 1,513
+complete IEX-adjusted daily returns, retrieved on 9 October 2026 at
+22:05:14 UTC under revision \texttt{cb737b9b}. The backtest evaluated 1,387
+observations from 5 April 2021 through 9 October 2026, making 67 contributions
+totaling 13,400 dollars. All solves converged; no missing daily returns were
+skipped. Aggregate results were:
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Measure & Minimum variance & Equal purchases \\
+\midrule
+Terminal wealth (dollars) & 17,738.59 & 23,078.07 \\
+Time-weighted return & 31.99\% & 93.75\% \\
+Annualized volatility & 7.20\% & 12.27\% \\
+Maximum drawdown & $-18.66\%$ & $-21.70\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Lower volatility and drawdown accompanied lower return and wealth on this
+chosen history. This tradeoff does not establish general superiority.
+The independent fixed-holdings study on the same snapshot completed 360
+model evaluations across 60 test blocks. Mean calibration ratios for sample
+/ Ledoit--Wolf were 1.1684 / 1.1366 (63 observations), 1.1975 / 1.1765 (126),
+and 1.1870 / 1.1696 (252). Ratios above one indicate underestimation of
+subsequent variance on average in these groups. Present-day adjustments,
+surviving selected tickers and the unverified provider dividend convention
+prevent treating this as an unbiased investment backtest. Aggregate evidence
+and dataset identity are retained in
+\href{https://github.com/eshangark/portfolio-risk-engine/blob/main/docs/results/live-evaluation-summary.json}{the live evaluation summary};
+raw market histories and credentials are not committed.
+
+\subsection*{Variance calibration and limitations}
 
 Unperformed work includes live corporate-action validation, SIP entitlement checks
 and broader empirical analysis. The implemented
@@ -848,19 +937,9 @@ and 50 assets. It records median and percentile timings, compiler, platform,
 NumPy build configuration and thread settings. These are end-to-end costs
 including validation, eigendecomposition and Python/C++ crossing, not isolated
 kernel timings. Isolating pure binding overhead remains a separate benchmark.
-No investment-return result is claimed.
+API timings do not imply any investment-return advantage.
 
-\subsection{Integration validation and measured timings}
-
-At commit \texttt{aeea037}, all 34 tests passed on Python 3.10 and 3.12,
-alongside native sanitizer checks in
-\href{https://github.com/eshangark/portfolio-risk-engine/actions/runs/37958614693}{run 37958614693}.
-The data tests cover cache isolation, old revisions, removed observations,
-invalid timestamps and event arithmetic. The projection now subtracts a
-common offset before rescaling, preserving translation invariance for a
-large shared offset such as $(10^{16},10^{16})$ with unit bounds and unit
-budget; its projection is $(.5,.5)$. Tests also vary dollar units from
-$10^{-6}$ to $10^6$ and covariance scale from $10^{-12}$ to $10^{12}$.
+\subsection{Measured timings}
 
 The synthetic factor study uses seed 24109, 504 observations and three
 assets. It completed 72 evaluations with mean calibration ratio 1.0096.

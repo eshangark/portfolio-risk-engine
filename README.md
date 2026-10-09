@@ -8,9 +8,9 @@ The compiled engine evaluates volatility and risk contributions, differentiates 
 
 - [Technical paper (PDF)](docs/paper/portfolio-risk-engine.pdf) and [LaTeX source](docs/paper/portfolio-risk-engine.tex)
 - [Measured numerical results](docs/results/engine-report.json)
-- [Validation run](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37958614693): 34 tests on Python 3.10 and 3.12, native C++ sanitizers, 72 synthetic chronological evaluations and repeated API benchmarks
+- [Validation run](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37997031520): 42 tests on Python 3.10 and 3.12, native C++ sanitizers, independent solver certificates, cash-flow backtest and repeated API benchmarks
 - [Benchmark results](docs/results/benchmark.json): includes cases where custom AD is slower than NumPy
-- [Verified status](docs/status.md), [requirements and evidence](docs/requirements.md), [specification](docs/specification.md)
+- [Validation and backtest methodology](docs/validation.md)
 
 ## Build and run
 
@@ -25,7 +25,7 @@ python -m examples.engine_report --output work/engine-report.json
 streamlit run app/streamlit_app.py
 ```
 
-The synthetic app needs no credentials. [App setup](app/README.md) describes server-side Alpaca secrets and private hosting configuration. The [private hosted app](https://portfolio-risk-eng-fwywewfctjzvsqsxvhmumt.streamlit.app/) and IEX history retrieval were verified on 2026-10-09; see [status](docs/status.md) for the exact dataset and results. The local project is a working copy; GitHub stores the committed source and runs Linux validation remotely.
+The synthetic app needs no credentials. [App setup](app/README.md) describes server-side Alpaca secrets and private hosting configuration. The [private hosted app](https://portfolio-risk-eng-fwywewfctjzvsqsxvhmumt.streamlit.app/) and IEX history retrieval were verified on 2026-10-09; see [validation](docs/validation.md) for the methodology and results.
 
 [Live setup and verification](docs/live-setup.md) gives the account steps, server
 secrets template and read-only API probe. Requests respect a conservative history
@@ -37,6 +37,7 @@ Research and measurement commands (synthetic unless `live_report` is selected):
 
 ```sh
 python -m examples.research_report --output work/research-report.json
+python -m examples.backtest_report --output work/backtest-report.json
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 python -m examples.benchmark --output work/benchmark.json
 python -m examples.live_report --study --output work/live-study.json
 ```
@@ -71,4 +72,4 @@ The PDF is the reading copy; the standalone `.tex` is the editable source. With 
 tectonic docs/paper/portfolio-risk-engine.tex
 ```
 
-Planning documents remain during development and will be reviewed for removal before public release.
+The tracked tree contains source, tests, setup documentation and research evidence.
