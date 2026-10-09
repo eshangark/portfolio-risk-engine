@@ -171,6 +171,8 @@ if returns is not None:
         if st.button('Run historical backtest'):
             try:
                 with st.spinner('Simulating chronological contributions…'):
+                    if prepared.dropped_return_dates:
+                        raise ValueError('Backtests require complete adjacent-session history; missing daily returns cannot be skipped.')
                     backtest=contribution_backtest(returns)
                 st.dataframe(pd.DataFrame({name:backtest[name] for name in ('optimized','equal_purchases')}).T,width='stretch')
                 st.write(f"{backtest['observations']} evaluated observations; {len(backtest['decisions'])} contributions totaling {backtest['total_contributions']:,.2f} dollars.")

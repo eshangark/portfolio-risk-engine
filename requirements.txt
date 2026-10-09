@@ -1,1 +1,2 @@
 .[app]
+# Rebuild the installed C++/Python package for the 0.3.0 numerical audit release.

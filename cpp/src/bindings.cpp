@@ -7,7 +7,7 @@ namespace py=pybind11;
 namespace pr=portfolio_risk;
 PYBIND11_MODULE(_core,m) {
     m.doc()="C++17 portfolio risk, reverse-mode differentiation and constrained allocation";
-    m.attr("__version__")="0.2.0";
+    m.attr("__version__")="0.3.0";
     py::class_<pr::ad::Variable>(m,"Variable")
         .def_property_readonly("value",&pr::ad::Variable::value)
         .def(py::self+py::self).def(py::self-py::self).def(py::self*py::self).def(py::self/py::self);

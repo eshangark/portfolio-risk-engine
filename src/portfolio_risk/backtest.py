@@ -20,7 +20,9 @@ def contribution_backtest(returns, window=126, interval=21, method='ledoit_wolf'
         raise ValueError('Returns require a dated DataFrame.')
     if returns.index.hasnans or not returns.index.is_unique or not returns.index.is_monotonic_increasing:
         raise ValueError('Dates must be valid, unique and increasing.')
-    values=returns.to_numpy(dtype=float)
+    # Fix memory order so identical prefixes use identical BLAS reduction paths,
+    # even when pandas supplies different layouts after a future-only edit.
+    values=np.ascontiguousarray(returns.to_numpy(dtype=float))
     if values.ndim!=2 or values.shape[1]==0 or not np.isfinite(values).all() or np.any(values<=-1):
         raise ValueError('Finite simple returns strictly above -1 required.')
     if not isinstance(window,int) or window<2 or not isinstance(interval,int) or interval<1 or len(values)<=window:

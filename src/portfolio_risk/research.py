@@ -18,7 +18,7 @@ def chronological_study(returns, windows=(63,126,252), horizon=21, budget=200., 
         raise ValueError('Returns require a dated DataFrame.')
     if returns.index.hasnans or not returns.index.is_unique or not returns.index.is_monotonic_increasing:
         raise ValueError('Return dates must be valid, unique and increasing.')
-    values=returns.to_numpy(dtype=float)
+    values=np.ascontiguousarray(returns.to_numpy(dtype=float))
     if values.ndim!=2 or values.shape[1]==0 or not np.isfinite(values).all(): raise ValueError('Finite nonempty returns required.')
     if not windows or any(not isinstance(w,int) or w<2 for w in windows): raise ValueError('Windows must be integers >=2.')
     if not isinstance(horizon,int) or horizon<2 or len(values)<max(windows)+horizon: raise ValueError('Insufficient history or invalid horizon.')
