@@ -20,6 +20,7 @@ jobs:
       - run: python -m examples.two_asset --output work/two-asset.json
       - run: python -m examples.engine_report --output work/engine-report.json
       - run: python -m examples.research_report --output work/research-report.json
+      - run: python -m examples.backtest_report --output work/backtest-report.json
       - run: python -m examples.benchmark --output work/benchmark.json
         env:
           OMP_NUM_THREADS: '1'

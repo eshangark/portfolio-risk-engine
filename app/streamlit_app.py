@@ -9,6 +9,7 @@ from portfolio_risk import _core
 from portfolio_risk.data import AlpacaData,DataError,prepare_history,symbols_checked,completed_history_end
 from portfolio_risk.estimation import estimate_covariance
 from portfolio_risk.research import chronological_study
+from portfolio_risk.backtest import contribution_backtest
 
 st.set_page_config(page_title='Portfolio Risk Engine',page_icon='∇',layout='wide')
 st.title('Portfolio Risk Engine')
@@ -48,6 +49,7 @@ else:
     st.sidebar.caption('IEX covers one exchange. SIP access depends on your subscription.')
     method=st.sidebar.selectbox('Covariance method',['sample','ledoit_wolf'])
     window=st.sidebar.selectbox('Completed return observations',[63,126,252],index=2)
+    history_days=st.sidebar.selectbox('History lookback (calendar days)',[550,2200])
     confirmed=st.sidebar.checkbox('My symbols are US stocks or unleveraged ETFs, with no cash positions.')
     if not confirmed: st.info('Confirm the supported universe to load your portfolio.'); st.stop()
     refresh=st.sidebar.button('Retrieve / refresh data')
@@ -59,7 +61,7 @@ else:
         symbols=list(symbols_checked([p[0] for p in pairs])); amounts=np.array([float(p[1]) for p in pairs])
         if not np.isfinite(amounts).all() or np.any(amounts<0) or amounts.sum()<=0: raise DataError('Amounts must be nonnegative with a positive total.')
         if unit=='Weights' and abs(amounts.sum()-1)>1e-12: raise DataError('Hypothetical weights must sum to one.')
-        now=pd.Timestamp(datetime.now(timezone.utc)); start=(now-pd.Timedelta(days=550)).normalize()
+        now=pd.Timestamp(datetime.now(timezone.utc)); start=(now-pd.Timedelta(days=history_days)).normalize()
         # Never request the future or the most recent 15 minutes from restricted feeds.
         end=completed_history_end(now).floor('15min')
         provider=provider_for_session(feed)
@@ -163,3 +165,18 @@ if returns is not None:
                          'contribution':study['contribution'],'cap':study['cap'],'annualization':study['annualization']})
             except ValueError as exc:
                 st.error(f'Study unavailable: {exc}')
+    with st.expander('Historical contribution backtest'):
+        st.write('Start with 1,000 hypothetical dollars equally divided among the selected assets. Every 21 observations, invest 200 dollars using the preceding 126 observations and Ledoit-Wolf covariance. Compare with equal-dollar purchases using identical cash flows.')
+        st.caption('Holdings drift with each daily return. All decisions precede the return being evaluated. Fees, taxes, spreads and executable prices are excluded. Provider dividend conventions and historical revisions limit the interpretation.')
+        if st.button('Run historical backtest'):
+            try:
+                with st.spinner('Simulating chronological contributions…'):
+                    backtest=contribution_backtest(returns)
+                st.dataframe(pd.DataFrame({name:backtest[name] for name in ('optimized','equal_purchases')}).T,width='stretch')
+                st.write(f"{backtest['observations']} evaluated observations; {len(backtest['decisions'])} contributions totaling {backtest['total_contributions']:,.2f} dollars.")
+                ledger=pd.DataFrame(backtest['ledger']).set_index('date')
+                st.line_chart(ledger[['wealth','equal_purchase_wealth']])
+                st.caption('Terminal wealth includes deposits. Time-weighted return removes the direct effect of deposits; volatility and drawdown use the daily time-weighted return series.')
+                st.json({k:v for k,v in backtest.items() if k not in ('ledger','decisions','optimized','equal_purchases')})
+            except ValueError as exc:
+                st.error(f'Backtest unavailable: {exc}')

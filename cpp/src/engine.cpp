@@ -2,6 +2,7 @@
 #include <Eigen/Eigenvalues>
 #include <algorithm>
 #include <limits>
+#include <numeric>
 
 namespace portfolio_risk {
 namespace {
@@ -40,10 +41,11 @@ Matrix covariance(const Matrix& input,std::size_t n,double* correction) {
     Matrix s=input/2+input.transpose()/2;
     Eigen::SelfAdjointEigenSolver<Matrix> eigen(s);
     if(eigen.info()!=Eigen::Success) throw std::runtime_error("covariance eigensolver failed");
+    if(!eigen.eigenvalues().allFinite()) throw std::overflow_error("covariance spectrum exceeds float64 domain");
     if(eigen.eigenvalues().minCoeff() < -tol) throw std::invalid_argument("covariance is not PSD");
     if(eigen.eigenvalues().minCoeff()<0)
         s=eigen.eigenvectors()*eigen.eigenvalues().cwiseMax(0).asDiagonal()*eigen.eigenvectors().transpose();
-    if(correction) *correction=(s-input).norm();
+    if(correction) *correction=(s-input).stableNorm();
     return s;
 }
 Risk risk(const Vector& w,const Matrix& input,bool autodiff) {
@@ -76,7 +78,7 @@ Vector dollar_gradient(const Vector& h,const Matrix& input) {
 double shrinkage_sensitivity(const Vector& w,const Matrix& input,double alpha) {
     weights(w); Matrix s=covariance(input,w.size());
     if(!std::isfinite(alpha)||alpha<0||alpha>1) throw std::invalid_argument("alpha outside [0,1]");
-    const double mu=s.trace()/s.rows();
+    const double mu=(s/static_cast<double>(s.rows())).trace();
     auto tape=ad::Tape::create(); auto a=tape->variable(alpha); auto one=tape->variable(1);
     auto q=tape->variable(0);
     for(Eigen::Index i=0;i<s.rows();++i) for(Eigen::Index j=0;j<s.cols();++j) {
@@ -87,25 +89,33 @@ double shrinkage_sensitivity(const Vector& w,const Matrix& input,double alpha) {
 }
 Vector project_capped_simplex(const Vector& z,const Vector& upper,double budget) {
     finite_vector(z); finite_vector(upper);
-    if(z.size()!=upper.size()||upper.minCoeff()<0||!std::isfinite(budget)||budget<0||!std::isfinite(upper.sum()))
+    if(z.size()!=upper.size()||upper.minCoeff()<0||!std::isfinite(budget)||budget<0)
         throw std::invalid_argument("invalid projection bounds or budget");
-    const double capacity=upper.sum();
+    long double capacity=0;
+    for(double u:upper) capacity+=static_cast<long double>(u);
     if(capacity<budget) throw std::invalid_argument("infeasible capped simplex");
     if(budget==0) return Vector::Zero(z.size());
     if(capacity==budget) return upper;
-    // Shift and rescale before bisection, keeping interval arithmetic bounded.
-    // Projection is unchanged by adding a common constant to z. Remove it
-    // before scaling so large shared offsets do not erase the budget geometry.
-    const long double origin=z[0];
-    long double scale=std::max(upper.maxCoeff(),budget);
-    for(Eigen::Index i=0;i<z.size();++i)
-        scale=std::max(scale,std::abs(static_cast<long double>(z[i])-origin));
+    // No component can exceed the total budget. Choose a score pivot where
+    // descending capped capacity first covers that budget. The dual threshold
+    // lies between pivot - n*budget and pivot. Scores beyond this interval can
+    // be clipped safely: they are necessarily saturated or zero. This preserves
+    // the budget geometry even for score differences of order 1e300.
+    std::vector<Eigen::Index> order(z.size());
+    std::iota(order.begin(),order.end(),0);
+    std::stable_sort(order.begin(),order.end(),[&](auto i,auto j){return z[i]>z[j];});
+    long double filled=0; Eigen::Index pivot=order.back();
+    for(auto i:order) {
+        filled+=std::min(static_cast<long double>(upper[i]),static_cast<long double>(budget));
+        if(filled>=budget) { pivot=i; break; }
+    }
+    const long double origin=z[pivot], scale=budget, radius=z.size();
     Vector zs(z.size()),us(upper.size());
     for(Eigen::Index i=0;i<z.size();++i) {
-        zs[i]=static_cast<double>((static_cast<long double>(z[i])-origin)/scale);
-        us[i]=static_cast<double>(static_cast<long double>(upper[i])/scale);
+        zs[i]=static_cast<double>(std::clamp((static_cast<long double>(z[i])-origin)/scale,-radius,radius));
+        us[i]=static_cast<double>(std::min(static_cast<long double>(upper[i])/scale,1.0L));
     }
-    const double b=static_cast<double>(static_cast<long double>(budget)/scale);
+    const double b=1;
     double lo=(zs-us).minCoeff(), hi=zs.maxCoeff();
     Vector x;
     for(int k=0;k<160;++k) {
