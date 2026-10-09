@@ -25,3 +25,10 @@ Theory is in the [PDF](paper/portfolio-risk-engine.pdf). Verification below refe
 | R19 | CI and credentials handling | 4, 5 | tests.yml; ignored secrets; server-side adapter | CI verified; live secrets pending |
 
 Source: [C++](../cpp/src/engine.cpp), [reference](../src/portfolio_risk/reference.py), [data](../src/portfolio_risk/data.py), [estimation](../src/portfolio_risk/estimation.py), [interface](../app/streamlit_app.py). Tests: [reference](../tests/test_reference.py), [engine](../tests/test_engine.py), [data](../tests/test_data.py), [app](../tests/test_app.py).
+
+Integration update awaiting compiled CI: R09 now audits incremental changes from
+complete snapshots; overlap-only network refresh remains deferred. R10 adds
+independent event-return arithmetic. R18 adds `chronological_study`, tests proving
+future observations cannot change the first fitted allocation, and a repeated
+validated-API benchmark. Live evidence remains pending credentials. See
+[live setup](live-setup.md) for the concrete account and deployment steps.

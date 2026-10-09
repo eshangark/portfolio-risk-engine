@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 import requests
 from numpy.testing import assert_allclose
-from portfolio_risk.data import AlpacaData,History,DataError,prepare_history
+from portfolio_risk.data import AlpacaData,History,DataError,prepare_history,utc,completed_history_end
+from portfolio_risk.adjustments import audit_event
 from portfolio_risk.estimation import estimate_covariance
 
 class Response:
@@ -23,7 +24,31 @@ class DataTests(unittest.TestCase):
         first=provider.history(['A','B'],'2026-10-01T00:00Z','2026-10-08T00:00Z')
         self.assertEqual(first.adjustment,'all'); self.assertEqual(len(session.calls),2)
         self.assertEqual(session.calls[1][1]['params']['page_token'],'p2')
-        self.assertIs(provider.history(['A','B'],'2026-10-01T00:00Z','2026-10-08T00:00Z'),first)
+        cached=provider.history(['A','B'],'2026-10-01T00:00Z','2026-10-08T00:00Z')
+        self.assertEqual(cached,first)
+        cached.bars['A'].clear()
+        self.assertEqual(len(provider.history(['A','B'],'2026-10-01T00:00Z','2026-10-08T00:00Z').bars['A']),1)
+    def test_refresh_detects_old_revisions_and_removed_rows(self):
+        before=[{'t':'2026-10-01T04:00Z','c':100},{'t':'2026-10-02T04:00Z','c':102}]
+        after=[{'t':'2026-10-01T04:00Z','c':50},{'t':'2026-10-05T04:00Z','c':53}]
+        p=AlpacaData('test','test',session=Session([Response({'bars':{'A':before}}),Response({'bars':{'A':after}})]))
+        args=(['A'],'2026-10-01T00:00Z','2026-10-08T00:00Z')
+        p.history(*args); updated=p.history(*args,force_refresh=True)
+        self.assertEqual([updated.refresh[k] for k in ('added','removed','revised')],[1,1,1])
+        self.assertEqual(updated.bars['A'],after)
+    def test_event_economics(self):
+        self.assertTrue(audit_event(100,50,50,50,new_shares_per_old=2)['matches_declared_event'])
+        self.assertTrue(audit_event(100,99,99,99,cash_per_old_share=1)['matches_declared_event'])
+        self.assertFalse(audit_event(100,50,100,50,new_shares_per_old=2)['matches_declared_event'])
+        # Backward price adjustment is not generally exactly a cash-wealth return.
+        self.assertFalse(audit_event(100,100,99,100,cash_per_old_share=1,tolerance=1e-6)['matches_declared_event'])
+    def test_invalid_timestamps_and_pagination(self):
+        for value in ('NaT','2026-10-08'):
+            with self.assertRaises(DataError): utc(value)
+        repeated=Response({'bars':{},'next_page_token':'same'})
+        with self.assertRaises(DataError):
+            AlpacaData('test','test',session=Session([repeated,repeated])).history(['A'],'2026-10-01T00:00Z','2026-10-08T00:00Z')
+        self.assertEqual(completed_history_end('2026-10-08T18:00Z'),pd.Timestamp('2026-10-08T17:45Z'))
     def test_bounded_retries_and_entitlement(self):
         sleeps=[]; session=Session([Response({},429,{'Retry-After':'2'}),Response({'bars':{}})])
         provider=AlpacaData('test','test',session=session,sleep=sleeps.append)

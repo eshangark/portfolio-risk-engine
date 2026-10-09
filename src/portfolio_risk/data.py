@@ -5,6 +5,7 @@ No trading endpoints. All network access is injectable for reproducible tests.
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from collections import OrderedDict
+from copy import deepcopy
 from typing import Protocol
 import hashlib
 import json
@@ -25,6 +26,7 @@ class History:
     feed: str
     adjustment: str
     retrieved_at: str
+    refresh: dict | None = None
 
 @dataclass(frozen=True)
 class Prepared:
@@ -51,8 +53,31 @@ def symbols_checked(symbols):
 
 def utc(value):
     stamp=pd.Timestamp(value)
-    if stamp.tzinfo is None: raise DataError('An explicit timezone is required.')
+    if pd.isna(stamp) or stamp.tzinfo is None: raise DataError('A valid timestamp with an explicit timezone is required.')
     return stamp.tz_convert('UTC')
+
+
+def snapshot_changes(previous, current):
+    """Audit complete provider snapshots; never splice adjustment vintages."""
+    def indexed(bars):
+        result={}
+        for symbol, rows in bars.items():
+            for row in rows:
+                if not isinstance(row,dict): raise DataError('Malformed daily bar.')
+                try: key=(symbol,utc(row['t']).isoformat())
+                except (KeyError,TypeError,ValueError): raise DataError('Malformed bar timestamp.') from None
+                if key in result: raise DataError('Duplicate bar timestamp.')
+                result[key]=row
+        return result
+    old=indexed(previous); new=indexed(current)
+    return {'added':len(new.keys()-old.keys()), 'removed':len(old.keys()-new.keys()),
+            'revised':sum(old[k]!=new[k] for k in old.keys()&new.keys()),
+            'policy':'complete adjusted snapshot audit; no mixed vintages'}
+
+
+def completed_history_end(now):
+    """Conservative endpoint cutoff compatible with delayed-feed history access."""
+    return utc(now)-pd.Timedelta(minutes=15)
 
 
 class AlpacaData:
@@ -85,16 +110,18 @@ class AlpacaData:
             return payload
         raise DataError('Request exhausted.')
 
-    def history(self,symbols,start,end):
+    def history(self,symbols,start,end,adjustment='all',force_refresh=False):
         symbols=symbols_checked(symbols); start=utc(start); end=utc(end)
         if start>=end: raise DataError('History start must precede end.')
-        key=(symbols,start.isoformat(),end.isoformat(),self.feed,'all')
+        if adjustment not in ('raw','split','dividend','all'): raise DataError('Unsupported adjustment mode.')
+        key=(symbols,start.isoformat(),end.isoformat(),self.feed,adjustment)
         cached=self._cache.get(key)
-        if cached and self._clock()-cached[0]<self._ttl: return cached[1]
+        if cached and not force_refresh and self._clock()-cached[0]<self._ttl: return deepcopy(cached[1])
         bars={s:[] for s in symbols}; token=None; seen=set()
         for _ in range(1000):
             params={'symbols':','.join(symbols),'start':start.isoformat(),'end':end.isoformat(),
-                    'timeframe':'1Day','adjustment':'all','feed':self.feed,'sort':'asc','limit':10000}
+                    'timeframe':'1Day','adjustment':adjustment,'feed':self.feed,'sort':'asc','limit':10000,
+                    'currency':'USD','asof':end.date().isoformat()}
             if token: params['page_token']=token
             payload=self._get('/v2/stocks/bars',params)
             page=payload.get('bars')
@@ -107,12 +134,16 @@ class AlpacaData:
             if not isinstance(token,str) or token in seen: raise DataError('Invalid or repeated pagination token.')
             seen.add(token)
         else: raise DataError('Pagination exceeded the bounded page limit.')
-        result=History(symbols,bars,self.feed,'all',datetime.fromtimestamp(self._clock(),timezone.utc).isoformat())
+        # Compare complete snapshots so revisions outside the recent overlap cannot
+        # silently survive. This audits incremental changes without claiming lower
+        # network volume or a provider guarantee of historical immutability.
+        changes=snapshot_changes(cached[1].bars if cached else {},bars)
+        result=History(symbols,bars,self.feed,adjustment,datetime.fromtimestamp(self._clock(),timezone.utc).isoformat(),changes)
         self._cache[key]=(self._clock(),result)
         while len(self._cache)>32: self._cache.popitem(last=False)
         # Re-fetch the entire adjusted window on expiry. Incremental splicing is
         # intentionally deferred until revision/corporate-action checks are verified.
-        return result
+        return deepcopy(result)
 
     def latest_prices(self,symbols,now=None):
         symbols=symbols_checked(symbols); now=utc(now or datetime.now(timezone.utc))
@@ -152,7 +183,9 @@ def prepare_history(history,start,end,asof=None,min_observations=20):
     columns={}
     for symbol in symbols:
         rows=history.bars.get(symbol,[]); observations={}
+        if not isinstance(rows,list): raise DataError(f'Malformed daily bars for {symbol}.')
         for row in rows:
+            if not isinstance(row,dict): raise DataError(f'Malformed daily bar for {symbol}.')
             try: timestamp=utc(row['t']); price=float(row['c'])
             except (KeyError,TypeError,ValueError): raise DataError(f'Malformed daily bar for {symbol}.') from None
             if not np.isfinite(price) or price<=0: raise DataError(f'Nonpositive or nonfinite price for {symbol}.')
@@ -170,4 +203,6 @@ def prepare_history(history,start,end,asof=None,min_observations=20):
     identity=hashlib.sha256(returns.to_csv(float_format='%.17g').encode()).hexdigest()
     return Prepared(returns,len(sessions),dropped,str(sessions[-1].date()),identity,
                     {'provider':'Alpaca','feed':history.feed,'adjustment':history.adjustment,
-                     'retrieved_at':history.retrieved_at,'period':'daily','dividend_convention':'provider-adjusted; economic validation pending'})
+                     'retrieved_at':history.retrieved_at,'period':'daily','refresh':history.refresh,
+                     'requested_start':start.isoformat(),'requested_end':end.isoformat(),
+                     'analysis_asof':now.isoformat(),'dividend_convention':'provider-adjusted; economic validation pending'})

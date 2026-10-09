@@ -94,9 +94,18 @@ Vector project_capped_simplex(const Vector& z,const Vector& upper,double budget)
     if(budget==0) return Vector::Zero(z.size());
     if(capacity==budget) return upper;
     // Shift and rescale before bisection, keeping interval arithmetic bounded.
-    const double scale=std::max({z.cwiseAbs().maxCoeff(),upper.maxCoeff(),budget});
-    Vector zs=z/scale, us=upper/scale;
-    const double b=budget/scale;
+    // Projection is unchanged by adding a common constant to z. Remove it
+    // before scaling so large shared offsets do not erase the budget geometry.
+    const long double origin=z[0];
+    long double scale=std::max(upper.maxCoeff(),budget);
+    for(Eigen::Index i=0;i<z.size();++i)
+        scale=std::max(scale,std::abs(static_cast<long double>(z[i])-origin));
+    Vector zs(z.size()),us(upper.size());
+    for(Eigen::Index i=0;i<z.size();++i) {
+        zs[i]=static_cast<double>((static_cast<long double>(z[i])-origin)/scale);
+        us[i]=static_cast<double>(static_cast<long double>(upper[i])/scale);
+    }
+    const double b=static_cast<double>(static_cast<long double>(budget)/scale);
     double lo=(zs-us).minCoeff(), hi=zs.maxCoeff();
     Vector x;
     for(int k=0;k<160;++k) {
@@ -104,7 +113,9 @@ Vector project_capped_simplex(const Vector& z,const Vector& upper,double budget)
         x=(zs.array()-mid).max(0).min(us.array());
         if(x.sum()>b) lo=mid; else hi=mid;
     }
-    x=((zs.array()-(lo+(hi-lo)/2)).max(0).min(us.array())*scale).matrix();
+    x=((zs.array()-(lo+(hi-lo)/2)).max(0).min(us.array())).matrix();
+    for(Eigen::Index i=0;i<x.size();++i)
+        x[i]=std::clamp(static_cast<double>(static_cast<long double>(x[i])*scale),0.0,upper[i]);
     // Remove the last few ulps of budget residual without violating the box.
     double residual=budget-x.sum();
     for(Eigen::Index i=0;i<x.size() && residual!=0;++i) {

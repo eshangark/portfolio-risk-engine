@@ -1,11 +1,12 @@
 """Portfolio analysis UI. Numerical calculations execute in the compiled engine."""
 import os
+import hashlib
 from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 import streamlit as st
 from portfolio_risk import _core
-from portfolio_risk.data import AlpacaData,DataError,prepare_history,symbols_checked
+from portfolio_risk.data import AlpacaData,DataError,prepare_history,symbols_checked,completed_history_end
 from portfolio_risk.estimation import estimate_covariance
 
 st.set_page_config(page_title='Portfolio Risk Engine',page_icon='∇',layout='wide')
@@ -25,10 +26,13 @@ def credentials():
     return get('ALPACA_API_KEY'),get('ALPACA_API_SECRET')
 
 
-@st.cache_data(ttl=900,show_spinner=False)
-def historical(symbols,start,end,feed):
+def provider_for_session(feed):
     key,secret=credentials()
-    return AlpacaData(key,secret,feed=feed).history(symbols,start,end)
+    identity=hashlib.sha256((key+'\0'+secret+'\0'+feed).encode()).hexdigest()
+    if st.session_state.get('_provider_identity')!=identity:
+        st.session_state['_provider']=AlpacaData(key,secret,feed=feed)
+        st.session_state['_provider_identity']=identity
+    return st.session_state['_provider']
 
 
 if source=='Synthetic example':
@@ -45,7 +49,8 @@ else:
     window=st.sidebar.selectbox('Completed return observations',[63,126,252],index=2)
     confirmed=st.sidebar.checkbox('My symbols are US stocks or unleveraged ETFs, with no cash positions.')
     if not confirmed: st.info('Confirm the supported universe to load your portfolio.'); st.stop()
-    if not st.sidebar.button('Retrieve and analyze') and 'market_request' not in st.session_state: st.stop()
+    refresh=st.sidebar.button('Retrieve / refresh data')
+    if not refresh and 'market_request' not in st.session_state: st.stop()
     st.session_state.market_request=True
     try:
         pairs=[line.split(',') for line in text.splitlines() if line.strip()]
@@ -54,16 +59,17 @@ else:
         if not np.isfinite(amounts).all() or np.any(amounts<0) or amounts.sum()<=0: raise DataError('Amounts must be nonnegative with a positive total.')
         if unit=='Weights' and abs(amounts.sum()-1)>1e-12: raise DataError('Hypothetical weights must sum to one.')
         now=pd.Timestamp(datetime.now(timezone.utc)); start=(now-pd.Timedelta(days=550)).normalize()
-        # Stable date keys cache completed history, never holdings or personalized results.
-        end=now.normalize()+pd.Timedelta(days=1)
+        # Never request the future or the most recent 15 minutes from restricted feeds.
+        end=completed_history_end(now).floor('15min')
+        provider=provider_for_session(feed)
         with st.spinner('Retrieving completed daily observations…'):
-            history=historical(tuple(symbols),start.isoformat(),end.isoformat(),feed)
+            history=provider.history(tuple(symbols),start.isoformat(),end.isoformat(),force_refresh=refresh)
             prepared=prepare_history(history,start,end,asof=now,min_observations=window)
         returns=prepared.returns
         estimate=estimate_covariance(returns.iloc[-window:].to_numpy(),method)
         cov=estimate.covariance
         if unit=='Shares':
-            key,secret=credentials(); latest=AlpacaData(key,secret,feed).latest_prices(symbols,now)
+            latest=provider.latest_prices(symbols,now)
             st.dataframe(pd.DataFrame(latest).T)
             if any(row['stale'] for row in latest.values()): raise DataError('Valuation stopped because one or more recent prices are stale.')
             holdings=amounts*np.array([latest[s]['price'] for s in symbols])
@@ -71,10 +77,14 @@ else:
         with st.expander('Data and estimation details',expanded=False):
             st.json({**prepared.metadata,'latest_completed_session':prepared.latest_session,'common_return_rows':len(returns),
                      'dropped_return_dates':prepared.dropped_return_dates,'dataset_sha256':prepared.identity,
-                     'sample_window':window,'normalization':estimate.normalization,'shrinkage':estimate.shrinkage,
+                     'sample_window':window,'estimator':method,
+                     'window_start':str(returns.iloc[-window:].index[0].date()),
+                     'window_end':str(returns.index[-1].date()),
+                     'normalization':estimate.normalization,'shrinkage':estimate.shrinkage,
                      'annualization':estimate.annualization})
             st.dataframe(returns.tail(10))
-        st.warning('Provider-adjusted history is used. Split/dividend economic validation and display permissions remain unverified; keep this app private.')
+        st.caption(f'History retrieved {history.retrieved_at}. Feed: {feed.upper()}. Completed daily returns; this is not a streaming quote display.')
+        st.warning('Provider-adjusted history is used. Its dividend convention has not yet been checked against live events.')
     except (ValueError,DataError) as exc: st.error(str(exc)); st.stop()
 
 weights=holdings/holdings.sum()

@@ -88,5 +88,14 @@ class EngineTests(unittest.TestCase):
             with self.assertRaises(ValueError): core.allocate([600,400],200,S,caps)
         limited=core.allocate([0,0],100,S,[1,1],max_iterations=1,tolerance=1e-15)
         self.assertFalse(limited['converged']); self.assertEqual(limited['stopping_reason'],'iteration_limit')
+    def test_scale_and_translation_invariance(self):
+        assert_allclose(core.project_capped_simplex([1e16,1e16],[1,1],1),[.5,.5],atol=1e-13)
+        expected=core.allocate([600,400],200,S,[.6,.6])
+        for dollars in (1e-6,1.,1e6):
+            for covariance_scale in (1e-12,1.,1e12):
+                actual=core.allocate(np.array([600,400])*dollars,200*dollars,S*covariance_scale,[.6,.6])
+                self.assertTrue(actual['converged'])
+                assert_allclose(actual['purchases']/dollars,expected['purchases'],atol=1e-6)
+                assert_allclose(actual['variance']/covariance_scale,expected['variance'],rtol=1e-12)
 
 if __name__=='__main__': unittest.main()

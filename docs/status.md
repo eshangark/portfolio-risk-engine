@@ -2,6 +2,17 @@
 
 Updated 2026-10-09, America/New_York.
 
+## Live integration update (validation in progress)
+
+The owner has created an Alpaca account; credentials and Streamlit sign-in are
+still needed. Added server setup instructions, a read-only live report command,
+complete-snapshot revision auditing, independent corporate-event arithmetic,
+chronological study and benchmark commands. Corrected history requests to avoid
+future/restricted recent timestamps and isolated provider caches per session.
+Added a C++ projection fix for large common offsets and scale-invariance tests.
+Eight local data tests pass; compiled tests and measurements require the next CI
+run. No live API result or hosted deployment is claimed.
+
 ## Completed engine milestone
 
 - C++17/Eigen risk core, custom reverse-mode tape, pybind11 package and constrained allocator implemented.
