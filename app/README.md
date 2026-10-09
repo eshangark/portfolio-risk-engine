@@ -14,5 +14,10 @@ restricted to specific people. No deployment is claimed until its URL, compiled
 engine result and private-access setting have been checked.
 
 Live entitlement, dividend/split convention checks, and display permissions are
-still pending. Historical caches refresh whole adjusted windows; revision-safe
-incremental refresh is not implemented. Keep development private.
+still pending. Keep development private.
+
+See [live setup](../docs/live-setup.md) for the server secrets template and
+read-only verification commands. Complete-snapshot refresh now reports additions,
+removals and revisions without splicing adjustment vintages. Reduced-bandwidth
+overlap-only refresh remains deferred. The app retains a separate provider cache
+per session and never requests history through a future cutoff.

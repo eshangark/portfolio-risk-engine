@@ -19,3 +19,6 @@
 | D15 | Complete engine validation before hosted access | Linux CI validates compiled code while hosting remains a separate unverified account step |
 | D16 | Re-fetch adjusted history on cache expiry | Avoid incorrect incremental splicing until historical revision handling is validated |
 | D17 | Retain planning files during development | Owner will specify when to remove them before public release |
+| D18 | Audit complete snapshots for incremental changes | Short overlaps cannot detect arbitrary old revisions; network-volume optimization is deferred rather than claiming revision safety |
+| D19 | Chronological independent contribution decisions | Fixed initial holdings at each cutoff separate variance calibration from cumulative trading or return claims |
+| D20 | Benchmark full validated APIs first | Includes eigendecomposition and binding costs; does not pretend these are isolated kernel timings |

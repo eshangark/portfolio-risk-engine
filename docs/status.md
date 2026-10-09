@@ -2,7 +2,7 @@
 
 Updated 2026-10-09, America/New_York.
 
-## Live integration update (validation in progress)
+## Live integration update (verified synthetic and Linux results)
 
 The owner has created an Alpaca account; credentials and Streamlit sign-in are
 still needed. Added server setup instructions, a read-only live report command,
@@ -10,8 +10,13 @@ complete-snapshot revision auditing, independent corporate-event arithmetic,
 chronological study and benchmark commands. Corrected history requests to avoid
 future/restricted recent timestamps and isolated provider caches per session.
 Added a C++ projection fix for large common offsets and scale-invariance tests.
-Eight local data tests pass; compiled tests and measurements require the next CI
-run. No live API result or hosted deployment is claimed.
+Eight local data tests pass. [Run 37958614693](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37958614693)
+at `aeea037dcf3a5dafaa3cc98adcc868255d813792` passed all 34 tests on Python 3.10
+and 3.12, native sanitizers, all examples and the benchmark. The synthetic study
+completed 72 evaluations (mean calibration ratio 1.0096; not market evidence).
+[Benchmarks](results/benchmark.json) include validation and binding overhead:
+at 50 assets, NumPy 285.10 us, C++ analytical 182.34 us, C++ AD 884.69 us median
+on the recorded Python 3.12 runner. No live API result or hosted deployment is claimed.
 
 ## Completed engine milestone
 
@@ -25,8 +30,8 @@ run. No live API result or hosted deployment is claimed.
 ## Remaining work
 
 1. Private Streamlit deployment: account authorization/capacity, actual hosted C++ build, private sharing verification and synthetic interaction check. No deployment exists yet.
-2. Live Alpaca entitlement and known split/dividend checks, automated eligible-universe checks, and revision-safe incremental refresh. Current cache expiry re-fetches the entire adjusted window.
-3. Chronological real-data estimation/allocation study, numerical scale hardening, and fair NumPy/C++ benchmarks. No empirical or speed advantage claimed.
+2. Live Alpaca entitlement and known split/dividend checks, automated eligible-universe checks, and reduced-bandwidth incremental refresh. Current refresh audits complete adjusted snapshots; it never splices adjustment vintages.
+3. Chronological real-data estimation/allocation study and wider scale stress testing. End-to-end benchmarks are measured; isolated kernel/binding benchmarks remain separate. No market-performance advantage claimed.
 4. Final publication review: remove agreed planning files when instructed, choose license and check data-display rights. Keep repository private until explicit direction.
 
 ## Environment and continuation

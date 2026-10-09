@@ -8,7 +8,8 @@ The compiled engine evaluates volatility and risk contributions, differentiates 
 
 - [Technical paper (PDF)](docs/paper/portfolio-risk-engine.pdf) and [LaTeX source](docs/paper/portfolio-risk-engine.tex)
 - [Measured numerical results](docs/results/engine-report.json)
-- [Validation run](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37956387933): 27 tests on Python 3.10 and 3.12, native C++ sanitizer checks, and reproducible examples
+- [Validation run](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37958614693): 34 tests on Python 3.10 and 3.12, native C++ sanitizers, 72 synthetic chronological evaluations and repeated API benchmarks
+- [Benchmark results](docs/results/benchmark.json): includes cases where custom AD is slower than NumPy
 - [Verified status](docs/status.md), [requirements and evidence](docs/requirements.md), [specification](docs/specification.md)
 
 ## Build and run
@@ -26,6 +27,20 @@ streamlit run app/streamlit_app.py
 
 The synthetic app needs no credentials. [App setup](app/README.md) describes server-side Alpaca secrets and private hosting configuration. **No hosted deployment or live-account validation is claimed.** The local project is a working copy; GitHub stores the committed source and runs Linux validation remotely.
 
+[Live setup and verification](docs/live-setup.md) gives the account steps, server
+secrets template and read-only API probe. Requests respect a conservative history
+cutoff; explicit refresh audits full snapshots for added, removed and revised bars.
+Caches are isolated by session. Dividend/split audits compare provider returns
+against independently supplied event economics.
+
+Research and measurement commands (synthetic unless `live_report` is selected):
+
+```sh
+python -m examples.research_report --output work/research-report.json
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 python -m examples.benchmark --output work/benchmark.json
+python -m examples.live_report --study --output work/live-study.json
+```
+
 ## Mathematics
 
 For fixed symmetric PSD covariance $\Sigma$ and long-only weights summing to one:
@@ -40,10 +55,10 @@ In the worked example, weights $(0.6,0.4)$ and covariance entries $(.04,.006;.00
 
 | Area | Implemented | Remaining validation |
 | --- | --- | --- |
-| C++ / autodiff | Risk, attribution, dollar and shrinkage sensitivities; owned tape | Broader scale stress tests and performance benchmarks |
+| C++ / autodiff | Risk, attribution, dollar and shrinkage sensitivities; owned tape; scale tests; benchmark runner | Extreme scale limits; isolated kernel/binding timings |
 | Allocation | Capped-simplex projection, analytical/AD gradients, OSQP comparison | Real-data allocation stability study |
-| Estimation | Sample covariance, fitted Ledoit–Wolf, explicit normalization | Chronological estimation-quality study |
-| Data | Pagination, bounded retries, cache, session alignment, stale-price checks | Live entitlement, corporate actions, incremental refresh |
+| Estimation | Sample covariance, fitted Ledoit–Wolf, explicit normalization; chronological protocol | Live chronological estimation-quality results |
+| Data | Pagination, bounded retries, audited snapshot refresh, session alignment, stale-price checks | Live entitlement, event verification, overlap-only network refresh |
 | Interface | Synthetic and market workflows; tested synthetic interactions | Private hosted operation and live end-to-end checks |
 
 Scope: USD US stocks and unleveraged ETFs; long-only, continuous dollar purchases, no cash sleeve. Asset eligibility currently requires user confirmation. Historical covariance is a model estimate, not a forecast guarantee. No trading, brokerage execution or return promises. Keep credentials, holdings and market-data caches outside commits. The repository remains private; no open-source license has been selected.

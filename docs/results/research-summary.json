@@ -1,0 +1,11 @@
+{
+  "data_identity": "synthetic-factor-returns-seed-24109; not market evidence",
+  "evaluations": 72,
+  "mean_calibration_ratio": 1.0095965967239426,
+  "output": "work/research-report.json",
+  "evidence": {
+    "commit": "aeea037dcf3a5dafaa3cc98adcc868255d813792",
+    "workflow_run": 37958614693,
+    "job": 113915418276
+  }
+}

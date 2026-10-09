@@ -608,20 +608,33 @@ four attempts with bounded waits. There is no silent feed fallback.
 access documentation} distinguishes coverage and subscription
 requirements.
 
-The adapter has a bounded, 15-minute in-memory history cache; the
-interface also caches history for 15 minutes. Cache keys include
-symbols, range and feed. Holdings and personalized results are not
-cached there. On expiry the entire adjusted window is fetched again.
-Revision-safe incremental refresh remains outstanding: a future
-incremental cache must detect changes to older adjusted observations,
-rather than splice incompatible adjustment bases.
+The adapter has a bounded, 15-minute in-memory history cache, isolated
+per dashboard session and credential identity. Cache keys include symbols,
+range, feed and adjustment mode. Requests end at least 15 minutes before
+analysis time rather than in the future. On expiry or manual refresh the
+entire adjusted window is fetched, and snapshots are compared for added,
+removed and revised observations, including older dates. Returned histories
+are defensive copies. This audits incremental changes without mixing
+adjustment vintages; it does not reduce network volume. An overlap-only
+refresh cannot guarantee detection of arbitrary revisions outside its overlap.
 
 \href{https://docs.alpaca.markets/us/reference/stockbars}{Historical
 bars documentation} lists adjustment choices, but an option name alone
 does not establish dividend reinvestment economics. Known split/dividend
 cases, account entitlement and display/redistribution permissions remain
 unverified. Checked-in fixtures are synthetic. Mocked HTTP tests
-establish software behavior, not successful live access.
+establish software behavior, not successful live access. For an independently
+specified corporate event, the audit helper compares the adjusted-price return
+with the holder's wealth return
+\[
+r_{\mathrm{event}}=\frac{kP_{\mathrm{after}}+d}{P_{\mathrm{before}}}-1,
+\]
+where \(k\) is new shares per old share and \(d\) is cash per old share.
+A two-for-one split from 100 to 50 gives zero wealth return. A cash dividend
+of one with prices 100 and 99 also gives zero. Backward price adjustment
+is not generally identical to cash-wealth arithmetic when the ex-date price
+also changes for other reasons. Tests intentionally detect that discrepancy;
+the helper cannot certify a provider convention without checked live events.
 
 \subsection{Calendar and observation
 policy}\label{calendar-and-observation-policy}
@@ -646,7 +659,7 @@ estimator normalization.
 Current shares use separately retrieved, unadjusted latest trades. A
 price older than 15 minutes during an open session, or older than 15
 minutes before the last completed close while closed, is flagged stale.
-Future and nonpositive prices are rejected. Stale share valuation stops
+Prices more than 30 seconds into the future and nonpositive prices are rejected. Stale share valuation stops
 the interface. A last trade is an observation, not an executable quote;
 this threshold is an explicit policy, not a provider guarantee. Dollar
 and hypothetical-weight inputs do not need the valuation request.
@@ -791,19 +804,68 @@ unconstrained gradient.
 
 \subsection{Remaining empirical work}\label{remaining-empirical-work}
 
-Unperformed work includes corporate-action validation, live entitlement
-checks, revision-safe incremental refresh, private hosted operation,
-chronological real-data analysis and performance benchmarks. For
-chronological evaluation, choose parameters using information through
-cutoff \(t\), then evaluate a subsequent interval. Do not select windows
-using future performance. Record universe limitations and provider
-revisions: current adjusted histories can embed later corporate actions.
+Unperformed work includes live corporate-action validation, entitlement checks,
+private hosted operation and chronological real-data analysis. The implemented
+research protocol fits windows of 63, 126 and 252 observations through a cutoff,
+then evaluates the next 21 observations, using nonoverlapping test blocks.
+Each cutoff poses an independent contribution problem with fixed initial
+holdings of 100 dollars per asset and a 200-dollar contribution. It is not
+a cumulative trading simulation. For fitted weights \(w_t\), it compares
+predicted annual variance with \(252\operatorname{Var}_{\mathrm{test}}(r_s^Tw_t)\),
+using sample normalization within the test block. The calibration ratio and
+successive allocation \(L^1\) changes summarize variance fit and stability.
+Future-perturbation tests ensure that changing test observations cannot change
+the first fitted allocation. Present-day adjusted history and a surviving-symbol
+universe can still introduce vintage or selection bias despite correct slicing.
 
-Benchmark equivalent computations against vectorized NumPy. Separate
-binding overhead from kernel time and record dimensions, compiler flags,
-BLAS/thread settings, CPU and repeated timings. The custom AD graph can
-be slower than a closed form; no speed advantage or investment-return
-result is claimed.
+The benchmark compares validated risk APIs against the vectorized NumPy
+reference, with five warm-up calls and seven batches of 30 calls at 2, 10
+and 50 assets. It records median and percentile timings, compiler, platform,
+NumPy build configuration and thread settings. These are end-to-end costs
+including validation, eigendecomposition and Python/C++ crossing, not isolated
+kernel timings. Isolating pure binding overhead remains a separate benchmark.
+No investment-return result is claimed.
+
+\subsection{Integration validation and measured timings}
+
+At commit \texttt{aeea037}, all 34 tests passed on Python 3.10 and 3.12,
+alongside native sanitizer checks in
+\href{https://github.com/eshangark/portfolio-risk-engine/actions/runs/37958614693}{run 37958614693}.
+The data tests cover cache isolation, old revisions, removed observations,
+invalid timestamps and event arithmetic. The projection now subtracts a
+common offset before rescaling, preserving translation invariance for a
+large shared offset such as $(10^{16},10^{16})$ with unit bounds and unit
+budget; its projection is $(.5,.5)$. Tests also vary dollar units from
+$10^{-6}$ to $10^6$ and covariance scale from $10^{-12}$ to $10^{12}$.
+
+The synthetic factor study uses seed 24109, 504 observations and three
+assets. It completed 72 evaluations with mean calibration ratio 1.0096.
+This is a reproducible exercise of the protocol under synthetic data,
+not empirical evidence about market covariance or an estimated confidence
+level. Full evaluation records are retained in the workflow artifacts.
+
+On the Python 3.12 Ubuntu x86-64 runner, using GCC 13.3 and one configured
+BLAS/OpenMP thread, measured median microseconds per validated API call were:
+
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+Assets & NumPy & C++ analytical & C++ AD \\
+\midrule
+2 & 34.44 & 3.48 & 4.48 \\
+10 & 45.14 & 9.98 & 30.41 \\
+50 & 285.10 & 182.34 & 884.69 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The analytical C++ path was faster for these cases, while the AD path was
+slower than NumPy at 50 assets. Graph construction and traversal have a
+material cost. This result depends on the tested APIs, runner and dimensions;
+it is not a claim that C++ or AD is universally faster. The
+\href{https://github.com/eshangark/portfolio-risk-engine/blob/main/docs/results/benchmark.json}{benchmark JSON}
+records percentile timings and the numerical-library environment.
+
 
 \subsection{Comprehension questions}\label{comprehension-questions}
 

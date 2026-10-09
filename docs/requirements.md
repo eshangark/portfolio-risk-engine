@@ -26,9 +26,12 @@ Theory is in the [PDF](paper/portfolio-risk-engine.pdf). Verification below refe
 
 Source: [C++](../cpp/src/engine.cpp), [reference](../src/portfolio_risk/reference.py), [data](../src/portfolio_risk/data.py), [estimation](../src/portfolio_risk/estimation.py), [interface](../app/streamlit_app.py). Tests: [reference](../tests/test_reference.py), [engine](../tests/test_engine.py), [data](../tests/test_data.py), [app](../tests/test_app.py).
 
-Integration update awaiting compiled CI: R09 now audits incremental changes from
+Integration update verified in [run 37958614693](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37958614693),
+commit `aeea037`: 34 tests on both Python versions and native sanitizers passed.
+R09 now audits incremental changes from
 complete snapshots; overlap-only network refresh remains deferred. R10 adds
 independent event-return arithmetic. R18 adds `chronological_study`, tests proving
 future observations cannot change the first fitted allocation, and a repeated
-validated-API benchmark. Live evidence remains pending credentials. See
+validated-API benchmark, measured on Linux. The chronological runner completed 72
+synthetic evaluations. Live evidence remains pending credentials. See
 [live setup](live-setup.md) for the concrete account and deployment steps.
