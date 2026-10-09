@@ -65,4 +65,4 @@ A tape owns node storage; handles carry tape identity and generation to reject c
 
 AD evaluates derivatives of the implemented arithmetic graph up to floating-point effects; it does not cure statistical model error. The closed-form volatility gradient is simple and remains an independent oracle. AD supplies implementation depth and handles composed normalization and parameter paths. See [Baydin et al., section 3](https://jmlr.org/papers/volume18/17-468/17-468.pdf).
 
-Implemented: `risk`, `dollar_gradient`, `shrinkage_sensitivity` in [reference.py](../../portfolio_risk/reference.py). Checks: analytical hand values, identities and multiple finite-difference step sizes in [tests](../../tests/test_reference.py). Custom tape, memory checks and cross-language comparisons are pending.
+Implemented: `risk`, `dollar_gradient`, `shrinkage_sensitivity` in [reference.py](../../src/portfolio_risk/reference.py). Checks: analytical hand values, identities and multiple finite-difference step sizes in [tests](../../tests/test_reference.py). Custom tape, memory checks and cross-language comparisons are pending.

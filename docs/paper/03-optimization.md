@@ -18,7 +18,7 @@ PSD curvature proves convexity: along every line the second derivative is nonneg
 
 With upper bounds only, feasibility is equivalent to $u_i\ge0$ for all $i$ and $\sum_i u_i\ge B$. Necessity follows by summing upper bounds; sufficiency follows by filling nonnegative capacities until $B$ is used. An existing overweight asset may become permissible after dilution by the contribution. Evaluate $h_i\le c_i(V+B)$, not $h_i/V\le c_i$.
 
-For $h=(600,400)$, $B=200$, and $c=(.6,.6)$, $u=(120,320)$ and the budget is feasible. Tightening the first cap to .4 makes its capacity $-120$, so no purchase-only solution exists. The reference implements these checks in [`purchase_bounds`](../../portfolio_risk/reference.py); floating-point residual tolerances for the actual solver remain a separate design choice.
+For $h=(600,400)$, $B=200$, and $c=(.6,.6)$, $u=(120,320)$ and the budget is feasible. Tightening the first cap to .4 makes its capacity $-120$, so no purchase-only solution exists. The reference implements these checks in [`purchase_bounds`](../../src/portfolio_risk/reference.py); floating-point residual tolerances for the actual solver remain a separate design choice.
 
 ## Proposed algorithm and projection
 

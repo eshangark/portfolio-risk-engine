@@ -17,3 +17,11 @@ data/
 cache/
 holdings*
 work/
+*.so
+*.dylib
+*.pyd
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz

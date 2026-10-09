@@ -150,7 +150,7 @@ Allocation allocate(const Vector& h,double budget,const Matrix& input,const Vect
         converged=scaled_residual<=tolerance;
     }
     Vector w=lower+y, x=total*y;
-    const double violation=std::max({0.0,-x.minCoeff(),(w-caps).maxCoeff()});
+    const double violation=std::max({0.0,(lower-w).maxCoeff(),(w-caps).maxCoeff()});
     // Diagnostics distinguish dollar budget residual from dimensionless weight bounds.
     return {x,w,w.dot(s*w),baseline,std::abs(x.sum()-budget),violation,
             spectral*scaled_residual,scaled_residual,iterations,converged,

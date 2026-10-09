@@ -19,7 +19,7 @@ def main():
     h = np.array([600.,400.])
     purchase = np.array([0.,100.])
     direction = np.array([-1.,1.])
-    source = Path(__file__).resolve().parents[1] / "portfolio_risk/reference.py"
+    source = Path(__file__).resolve().parents[1] / "src/portfolio_risk/reference.py"
     try:
         revision = subprocess.check_output(["git","rev-parse","HEAD"],stderr=subprocess.DEVNULL,text=True).strip()
     except (OSError,subprocess.CalledProcessError):

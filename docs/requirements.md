@@ -24,4 +24,4 @@
 | R18 | Chronological practical validation and fair benchmarks | paper/05-validation.md | study design only | Pending M6 |
 | R19 | CI, secure credentials, no holdings in source | README.md, AGENTS.md | tests.yml, .gitignore; remote run status in status.md | Configured |
 
-All numerical tests are in [tests/test_reference.py](../tests/test_reference.py); the reference is [portfolio_risk/reference.py](../portfolio_risk/reference.py). This table must grow with actual test links when later work is implemented.
+All numerical tests are in [tests/test_reference.py](../tests/test_reference.py); the reference is [portfolio_risk/reference.py](../src/portfolio_risk/reference.py). This table must grow with actual test links when later work is implemented.

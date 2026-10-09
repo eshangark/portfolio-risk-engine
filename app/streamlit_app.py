@@ -1,0 +1,130 @@
+"""Portfolio analysis UI. Numerical calculations execute in the compiled engine."""
+import os
+from datetime import datetime, timezone
+import numpy as np
+import pandas as pd
+import streamlit as st
+from portfolio_risk import _core
+from portfolio_risk.data import AlpacaData,DataError,prepare_history,symbols_checked
+from portfolio_risk.estimation import estimate_covariance
+
+st.set_page_config(page_title='Portfolio Risk Engine',page_icon='∇',layout='wide')
+st.title('Portfolio Risk Engine')
+st.caption('Understand risk, compare decisions, and inspect how the model changes the answer.')
+source=st.sidebar.radio('Data source',['Synthetic example','Alpaca market data'])
+st.sidebar.caption(f'Numerical engine {_core.__version__} · C++17')
+st.sidebar.markdown('USD · long-only · fractional shares · no cash sleeve')
+
+
+def credentials():
+    def get(name):
+        value=os.environ.get(name)
+        if value: return value
+        try: return st.secrets.get(name,'')
+        except (FileNotFoundError,st.errors.StreamlitSecretNotFoundError): return ''
+    return get('ALPACA_API_KEY'),get('ALPACA_API_SECRET')
+
+
+@st.cache_data(ttl=900,show_spinner=False)
+def historical(symbols,start,end,feed):
+    key,secret=credentials()
+    return AlpacaData(key,secret,feed=feed).history(symbols,start,end)
+
+
+if source=='Synthetic example':
+    st.info('Hypothetical two-asset example. These inputs are not market observations.')
+    symbols=['A','B']; holdings=np.array([600.,400.]); cov=np.array([[.04,.006],[.006,.01]])
+    returns=None
+else:
+    text=st.sidebar.text_area('Holdings: symbol, amount (one per line)','SPY, 600\nBND, 400')
+    unit=st.sidebar.selectbox('Amount represents',['Dollars','Shares','Weights'])
+    notional=st.sidebar.number_input('Portfolio value for hypothetical weights ($)',min_value=1.,value=1000.) if unit=='Weights' else None
+    feed=st.sidebar.selectbox('Feed',['iex','sip'])
+    st.sidebar.caption('IEX covers one exchange. SIP access depends on your subscription.')
+    method=st.sidebar.selectbox('Covariance method',['sample','ledoit_wolf'])
+    window=st.sidebar.selectbox('Completed return observations',[63,126,252],index=2)
+    confirmed=st.sidebar.checkbox('My symbols are US stocks or unleveraged ETFs, with no cash positions.')
+    if not confirmed: st.info('Confirm the supported universe to load your portfolio.'); st.stop()
+    if not st.sidebar.button('Retrieve and analyze') and 'market_request' not in st.session_state: st.stop()
+    st.session_state.market_request=True
+    try:
+        pairs=[line.split(',') for line in text.splitlines() if line.strip()]
+        if any(len(pair)!=2 for pair in pairs): raise DataError('Use one symbol, amount pair per line.')
+        symbols=list(symbols_checked([p[0] for p in pairs])); amounts=np.array([float(p[1]) for p in pairs])
+        if not np.isfinite(amounts).all() or np.any(amounts<0) or amounts.sum()<=0: raise DataError('Amounts must be nonnegative with a positive total.')
+        if unit=='Weights' and abs(amounts.sum()-1)>1e-12: raise DataError('Hypothetical weights must sum to one.')
+        now=pd.Timestamp(datetime.now(timezone.utc)); start=(now-pd.Timedelta(days=550)).normalize()
+        # Stable date keys cache completed history, never holdings or personalized results.
+        end=now.normalize()+pd.Timedelta(days=1)
+        with st.spinner('Retrieving completed daily observations…'):
+            history=historical(tuple(symbols),start.isoformat(),end.isoformat(),feed)
+            prepared=prepare_history(history,start,end,asof=now,min_observations=window)
+        returns=prepared.returns
+        estimate=estimate_covariance(returns.iloc[-window:].to_numpy(),method)
+        cov=estimate.covariance
+        if unit=='Shares':
+            key,secret=credentials(); latest=AlpacaData(key,secret,feed).latest_prices(symbols,now)
+            st.dataframe(pd.DataFrame(latest).T)
+            if any(row['stale'] for row in latest.values()): raise DataError('Valuation stopped because one or more recent prices are stale.')
+            holdings=amounts*np.array([latest[s]['price'] for s in symbols])
+        else: holdings=amounts*(notional if unit=='Weights' else 1)
+        with st.expander('Data and estimation details',expanded=False):
+            st.json({**prepared.metadata,'latest_completed_session':prepared.latest_session,'common_return_rows':len(returns),
+                     'dropped_return_dates':prepared.dropped_return_dates,'dataset_sha256':prepared.identity,
+                     'sample_window':window,'normalization':estimate.normalization,'shrinkage':estimate.shrinkage,
+                     'annualization':estimate.annualization})
+            st.dataframe(returns.tail(10))
+        st.warning('Provider-adjusted history is used. Split/dividend economic validation and display permissions remain unverified; keep this app private.')
+    except (ValueError,DataError) as exc: st.error(str(exc)); st.stop()
+
+weights=holdings/holdings.sum()
+result=_core.risk(weights,cov,autodiff=True)
+col1,col2=st.columns(2)
+col1.metric('Estimated annual volatility',f"{result['volatility']:.2%}")
+col2.metric('Portfolio value',f'${holdings.sum():,.2f}')
+st.caption('Constant-weight return volatility under a fixed covariance estimate; not a prediction or a complete investment objective.')
+rc=result['contributions']; grad=result['gradient']
+frame=pd.DataFrame({'Asset':symbols,'Capital weight':weights,'Dollar holding':holdings})
+if rc is not None:
+    frame['Risk contribution']=rc; frame['Share of volatility']=rc/result['volatility']
+    frame['Marginal volatility']=grad
+    st.dataframe(frame.set_index('Asset'),width='stretch')
+    leader=int(np.argmax(rc)); st.write(f"{symbols[leader]} contributes the most estimated volatility: {rc[leader]/result['volatility']:.1%}, compared with {weights[leader]:.1%} of capital.")
+    st.bar_chart(frame.set_index('Asset')[['Capital weight','Share of volatility']])
+else:
+    st.dataframe(frame); st.info('Volatility is zero; the usual volatility gradient is unavailable.')
+
+st.subheader('Compare a new purchase')
+asset=st.selectbox('Buy asset',symbols)
+amount=st.number_input('New cash purchase ($)',min_value=0.,value=100.)
+delta=np.zeros(len(symbols)); delta[symbols.index(asset)]=amount
+new_h=holdings+delta; after=_core.risk(new_h/new_h.sum(),cov)
+exact=after['volatility']-result['volatility']
+st.write(f'After purchase: {after["volatility"]:.4%} volatility; change {100*exact:+.4f} percentage points.')
+if grad is not None:
+    linear=float(_core.dollar_gradient(holdings,cov)@delta)
+    st.write(f'Local derivative approximation: {100*linear:+.4f} percentage points. Approximation error: {100*(linear-exact):+.4f} points.')
+
+st.subheader('Allocate a contribution')
+budget=st.number_input('Total contribution ($)',min_value=0.,value=200.)
+cap=st.slider('Maximum post-contribution weight per asset',min_value=0.01,max_value=1.,value=.60,step=.01)
+try:
+    allocation=_core.allocate(holdings,budget,cov,np.full(len(symbols),cap))
+    if not allocation['converged']: st.warning('Iteration limit reached; treat this as an unfinished optimization result.')
+    st.dataframe(pd.DataFrame({'Asset':symbols,'Purchase dollars':allocation['purchases'],'Resulting weight':allocation['weights']}).set_index('Asset'),width='stretch')
+    st.write(f"Allocated volatility: {np.sqrt(allocation['variance']):.4%}. Variance improvement over a feasible projected-equal-purchase baseline: {allocation['improvement']:.6g}.")
+    with st.expander('Optimization diagnostics'):
+        st.json({k:v for k,v in allocation.items() if k not in ('purchases','weights')})
+    if returns is not None:
+        comparisons=[]
+        for count in (63,126,252):
+            if len(returns)<count: continue
+            for name in ('sample','ledoit_wolf'):
+                alternative=estimate_covariance(returns.iloc[-count:].to_numpy(),name)
+                solution=_core.allocate(holdings,budget,alternative.covariance,np.full(len(symbols),cap))
+                comparisons.append({'Window':count,'Estimator':name,'Volatility':np.sqrt(solution['variance']),
+                                    'Converged':solution['converged'],**{s:float(x) for s,x in zip(symbols,solution['purchases'])}})
+        st.subheader('Sensitivity to estimation choices')
+        st.dataframe(pd.DataFrame(comparisons),width='stretch')
+        st.caption('Allocation differences across models are sensitivity results, not a calibrated confidence interval.')
+except ValueError as exc: st.error(f'No feasible allocation: {exc}')
