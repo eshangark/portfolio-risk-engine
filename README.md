@@ -1,54 +1,59 @@
 # Portfolio Risk Engine
 
-**A mathematics-first research project in portfolio risk, sensitivity, and constrained allocation.**
+A mathematics-first C++17 and Python engine for portfolio risk, automatic differentiation and constrained contribution allocation.
 
-> What drives a portfolio's estimated risk, how does a decision change it, and how dependable is that conclusion?
+**What drives estimated portfolio risk, how does a decision change it, and how dependent is the answer on the model?**
 
-The intended centerpiece is a C++ numerical engine with custom reverse-mode automatic differentiation and constrained quadratic optimization. Python handles market-data preparation, covariance estimation, independent reference calculations, and bindings. Streamlit will expose the engine through a private hosted interface.
+The compiled engine evaluates volatility and risk contributions, differentiates dollar normalization with a custom reverse-mode tape, and allocates a new contribution using projected gradient on a capped simplex. Python supplies independent reference calculations, covariance estimation, an Alpaca data adapter and a Streamlit interface.
 
-**Current milestone: mathematical foundation and independently runnable NumPy reference.** C++, automatic market data, the numerical optimizer, and hosted UI are pending. This is a staged start to the full project, not the final engine.
+- [Technical paper (PDF)](docs/paper/portfolio-risk-engine.pdf) and [LaTeX source](docs/paper/portfolio-risk-engine.tex)
+- [Measured numerical results](docs/results/engine-report.json)
+- [Validation run](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37956387933): 27 tests on Python 3.10 and 3.12, native C++ sanitizer checks, and reproducible examples
+- [Verified status](docs/status.md), [requirements and evidence](docs/requirements.md), [specification](docs/specification.md)
 
-## Start here
+## Build and run
 
-- [Technical paper](docs/paper/README.md): derivations, examples, assumptions, and research sources.
-- [Project specification](docs/specification.md): scope and completion criteria.
-- [Verified status](docs/status.md) and [decisions](docs/decisions.md).
-- [Requirements and evidence](docs/requirements.md).
-- [Original project brief](docs/project-brief.md).
-
-## Run the first milestone
-
-Python 3.10 or newer:
+Requires Python 3.10+, a C++17 compiler, CMake and Eigen3. On Debian/Ubuntu, install `build-essential libeigen3-dev`; on macOS, install Apple's command-line developer tools and Eigen3 first. The package build supplies CMake through scikit-build-core when needed.
 
 ```sh
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install .
+python -m pip install '.[test,app]'
 python -m unittest discover -s tests -v
-python -m examples.two_asset --output work/two-asset.json
+python -m examples.engine_report --output work/engine-report.json
+streamlit run app/streamlit_app.py
 ```
 
-Tests require only NumPy and Python's standard library. All fixtures are synthetic and need no API credentials. GitHub Actions is configured to repeat the reference checks on Python 3.10 and 3.12; a configured workflow is not evidence of a successful remote run.
+The synthetic app needs no credentials. [App setup](app/README.md) describes server-side Alpaca secrets and private hosting configuration. **No hosted deployment or live-account validation is claimed.** The local project is a working copy; GitHub stores the committed source and runs Linux validation remotely.
 
-## The mathematics
+## Mathematics
 
-For fixed symmetric positive-semidefinite covariance $\Sigma$, and long-only weights $w$ summing to one:
+For fixed symmetric PSD covariance $\Sigma$ and long-only weights summing to one:
 
-$$v=w^T\Sigma w,\qquad \sigma=\sqrt{v},\qquad \nabla_w\sigma=\frac{\Sigma w}{\sigma}\quad(\sigma>0).$$
+$$v=w^T\Sigma w,\qquad \sigma=\sqrt{v},\qquad \nabla_w\sigma=\Sigma w/\sigma\quad(\sigma>0).$$
 
-Risk contribution is $RC_i=w_i\partial_i\sigma$, and $\sum_i RC_i=\sigma$. Adding dollars to a holding changes every normalized weight; the reference differentiates through this normalization. The future allocator will minimize variance of $(h+x)/(V+B)$ subject to no sales, a fixed contribution, and concentration bounds.
+Risk contribution is $RC_i=w_i\partial_i\sigma$, with $\sum_i RC_i=\sigma$. Adding dollars changes all normalized weights. The allocator minimizes the variance of $(h+x)/(V+B)$ with $x\ge0$, $\sum_i x_i=B$, and post-contribution concentration caps. Its output includes feasibility and projected-gradient residuals, iteration count and convergence status.
 
-The worked example has weights $(0.6,0.4)$, asset volatilities $(0.2,0.1)$, and correlation $0.3$. Portfolio volatility is **13.74045%**; asset A holds 60% of capital but accounts for **83.89831%** of volatility contribution. These are hypothetical inputs, not estimates for real securities.
+In the worked example, weights $(0.6,0.4)$ and covariance entries $(.04,.006;.006,.01)$ give **13.74045% volatility**. Asset A holds 60% of capital but contributes **83.89831%** of volatility. A $200 contribution to holdings $(600,400)$ with 60% caps is allocated entirely to B, yielding weights $(.5,.5)$ and variance .0155. Inputs are hypothetical annual quantities.
 
-## Implemented and planned
+## Capabilities and remaining work
 
-| Area | Current state |
-| --- | --- |
-| Risk / derivatives / dollar normalization | NumPy reference and analytical checks |
-| Simple returns / sample covariance | Complete aligned arrays only |
-| Shrinkage | Fixed-alpha sensitivity reference; estimated Ledoit–Wolf coefficient pending |
-| Allocation | Mathematical formulation and feasibility checks; solver pending |
-| C++ / autodiff / pybind11 | Designed; implementation pending |
-| Alpaca / Streamlit | Research and integration contract; no live connection or deployment |
+| Area | Implemented | Remaining validation |
+| --- | --- | --- |
+| C++ / autodiff | Risk, attribution, dollar and shrinkage sensitivities; owned tape | Broader scale stress tests and performance benchmarks |
+| Allocation | Capped-simplex projection, analytical/AD gradients, OSQP comparison | Real-data allocation stability study |
+| Estimation | Sample covariance, fitted Ledoit–Wolf, explicit normalization | Chronological estimation-quality study |
+| Data | Pagination, bounded retries, cache, session alignment, stale-price checks | Live entitlement, corporate actions, incremental refresh |
+| Interface | Synthetic and market workflows; tested synthetic interactions | Private hosted operation and live end-to-end checks |
 
-Private development only. Keep credentials, personal holdings, and market-data caches out of commits. USD-denominated US stocks and ETFs, long-only, continuous dollar allocations; cash and leveraged/inverse funds are excluded initially. No price prediction, trading bot, brokerage execution, or return promises.
+Scope: USD US stocks and unleveraged ETFs; long-only, continuous dollar purchases, no cash sleeve. Asset eligibility currently requires user confirmation. Historical covariance is a model estimate, not a forecast guarantee. No trading, brokerage execution or return promises. Keep credentials, holdings and market-data caches outside commits. The repository remains private; no open-source license has been selected.
+
+## Rebuild the paper
+
+The PDF is the reading copy; the standalone `.tex` is the editable source. With Tectonic installed:
+
+```sh
+tectonic docs/paper/portfolio-risk-engine.tex
+```
+
+Planning documents remain during development and will be reviewed for removal before public release.

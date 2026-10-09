@@ -1,25 +1,27 @@
 # Verified project status
 
-Updated 2026-10-08, America/New_York.
+Updated 2026-10-09, America/New_York.
 
-## Milestone 1: foundation
+## Completed engine milestone
 
-- Private repository created at https://github.com/eshangark/portfolio-risk-engine; GitHub API returned `private: true` and `visibility: private`.
-- Mathematical specification, living paper, source register, architectural/data contracts, decisions and requirements table prepared.
-- NumPy reference implements risk, analytical sensitivities, dollar normalization, simple returns, sample covariance, fixed-alpha shrinkage and purchase feasibility.
-- All 13 local tests passed on Python 3.12.14 / NumPy 2.3.5, macOS arm64. Offline two-asset example ran and generated docs/results/two-asset.json.
-- GitHub Actions passed on Python 3.10 and 3.12 for foundation commit `41ae77d`: package installation, all reference tests, and the example completed successfully on both Linux jobs. [Verified run](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37877318717).
+- C++17/Eigen risk core, custom reverse-mode tape, pybind11 package and constrained allocator implemented.
+- Independent NumPy formulas, sample and fitted Ledoit–Wolf estimation, Alpaca adapter, calendar preparation and Streamlit app implemented.
+- [Run 37956387933](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37956387933), commit `8438207338cb59ff0a47db6f78eb5a3129ff1a94`: all 27 tests passed on Ubuntu/Python 3.10 and 3.12; native address/undefined-behavior sanitizer test passed; both example reports produced and uploaded.
+- [Measured C++ report](results/engine-report.json) preserves Python 3.12 job output with source hashes. Weight-gradient error 2.78e-17; dollar-gradient error 4.07e-20 on the two-asset fixture. Allocation purchases [0,200], variance .0155, reported constraint and mapping residuals zero.
+- Streamlit AppTest path failure fixed by resolving the script from the test file's location. No numerical expectations were weakened.
+- Paper converted to standalone LaTeX and PDF, with derivations, implementation detail, measured evidence and limitations. Old paper Markdown chapters replaced; planning documents retained per owner instruction.
 
-## Current limitations
+## Remaining work
 
-No C++ engine, custom AD, estimated Ledoit–Wolf coefficient, numerical optimizer, live Alpaca integration, or Streamlit application is implemented yet. No deployment, real-market validation or benchmark has run. These are subsequent milestones, not omitted requirements.
+1. Private Streamlit deployment: account authorization/capacity, actual hosted C++ build, private sharing verification and synthetic interaction check. No deployment exists yet.
+2. Live Alpaca entitlement and known split/dividend checks, automated eligible-universe checks, and revision-safe incremental refresh. Current cache expiry re-fetches the entire adjusted window.
+3. Chronological real-data estimation/allocation study, numerical scale hardening, and fair NumPy/C++ benchmarks. No empirical or speed advantage claimed.
+4. Final publication review: remove agreed planning files when instructed, choose license and check data-display rights. Keep repository private until explicit direction.
 
-The system Git/Python entry points require missing Apple developer tools. The bundled Codex Git and Python runtimes work and were used for the foundation. C++ local compilation will require a toolchain or a validated Linux build environment. GitHub repository creation used the browser and content was committed through the connected GitHub API. The local Git checkout has matching commit history and a clean working tree. Command-line GitHub authentication is not configured; continue using the connected API, or run `gh auth login` after installing GitHub CLI if ordinary push/pull is desired.
+## Environment and continuation
 
-## Next complete milestone
+The working copy lives under Documents/Codex; local edits occur there and may sync through the user's iCloud settings. GitHub contains committed code and remote test results. Local C++ compilation remains unavailable because Apple developer tools are absent; compiled validation runs on GitHub's Ubuntu machines. No Linux installation on the user's Mac is needed for these checks.
 
-Add the C++17 risk core with pybind11, package and test on Linux against the independent reference, then deploy a private synthetic Streamlit smoke test. Verify the actual target build and private access before adding market-data credentials. Hosting authorization/private-app slot availability and provider credentials/terms will be checked when needed.
+Bundled Git/Python are available. Command-line GitHub authentication is not configured; commits are uploaded through the connected GitHub API. Do not install a system toolchain, move the project or delete environments without a task-specific reason and authorization.
 
-## Session handoff
-
-Read AGENTS.md, README.md, this status, decisions and requirements first. Keep the repository private. Preserve the original project brief. Use synthetic fixtures until market-data retention permissions are established. See paper/05-validation.md for reproduction commands and comprehension questions.
+Read AGENTS.md, README.md, this file, decisions and requirements when resuming. Keep measured evidence tied to its original revision even when later documentation changes.

@@ -1,0 +1,94 @@
+{
+  "data_identity": "synthetic-two-asset-v1; annual covariance; USD",
+  "git_revision": "8438207338cb59ff0a47db6f78eb5a3129ff1a94",
+  "source_sha256": "952000e10f3fc2f0cd0daf4d3bbf390c9f9b08a914c8ba257ffdcef3d0e36a0c",
+  "example_sha256": "492846c7e43a730bc1bb8394ce13dea41a80654c90ef6091b346d6f8c3445e90",
+  "python": "3.12.15",
+  "numpy": "2.5.3",
+  "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+  "weights": [
+    0.6,
+    0.4
+  ],
+  "covariance": [
+    [
+      0.04,
+      0.006
+    ],
+    [
+      0.006,
+      0.01
+    ]
+  ],
+  "variance": 0.01888,
+  "volatility": 0.13740451229854134,
+  "gradient": [
+    0.19213342821406207,
+    0.05531113842526029
+  ],
+  "risk_contributions": [
+    0.11528005692843724,
+    0.022124455370104115
+  ],
+  "risk_shares": [
+    0.8389830508474577,
+    0.1610169491525424
+  ],
+  "dollar_gradient": [
+    0.0000547289159155207,
+    -0.00008209337387328108
+  ],
+  "purchase_B_100": {
+    "weights": [
+      0.5454545454545454,
+      0.45454545454545453
+    ],
+    "exact_change": -0.007242502632392678,
+    "linear_change": -0.008209337387328108
+  },
+  "transfers": [
+    {
+      "epsilon": 0.001,
+      "exact_change": -0.00013675206329891165,
+      "linear_change": -0.0001368222897888018
+    },
+    {
+      "epsilon": 0.01,
+      "exact_change": -0.001361136862616491,
+      "linear_change": -0.001368222897888018
+    },
+    {
+      "epsilon": 0.05,
+      "exact_change": -0.006656663367861054,
+      "linear_change": -0.00684111448944009
+    }
+  ],
+  "fixed_alpha_sensitivity": [
+    {
+      "alpha": 0,
+      "volatility": 0.13740451229854134
+    },
+    {
+      "alpha": 0.25,
+      "volatility": 0.1319469590403659
+    },
+    {
+      "alpha": 0.5,
+      "volatility": 0.12625371281669304
+    },
+    {
+      "alpha": 0.75,
+      "volatility": 0.1202913130695646
+    },
+    {
+      "alpha": 1,
+      "volatility": 0.1140175425099138
+    }
+  ],
+  "evidence": {
+    "commit": "8438207338cb59ff0a47db6f78eb5a3129ff1a94",
+    "workflow_run": 37956387933,
+    "job": 113907859411,
+    "extracted_from": "GitHub Actions job stdout"
+  }
+}
