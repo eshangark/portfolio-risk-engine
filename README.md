@@ -25,7 +25,7 @@ python -m examples.engine_report --output work/engine-report.json
 streamlit run app/streamlit_app.py
 ```
 
-The synthetic app needs no credentials. [App setup](app/README.md) describes server-side Alpaca secrets and private hosting configuration. **No hosted deployment or live-account validation is claimed.** The local project is a working copy; GitHub stores the committed source and runs Linux validation remotely.
+The synthetic app needs no credentials. [App setup](app/README.md) describes server-side Alpaca secrets and private hosting configuration. The [private hosted app](https://portfolio-risk-eng-fwywewfctjzvsqsxvhmumt.streamlit.app/) and IEX history retrieval were verified on 2026-10-09; see [status](docs/status.md) for the exact dataset and results. The local project is a working copy; GitHub stores the committed source and runs Linux validation remotely.
 
 [Live setup and verification](docs/live-setup.md) gives the account steps, server
 secrets template and read-only API probe. Requests respect a conservative history
@@ -58,8 +58,8 @@ In the worked example, weights $(0.6,0.4)$ and covariance entries $(.04,.006;.00
 | C++ / autodiff | Risk, attribution, dollar and shrinkage sensitivities; owned tape; scale tests; benchmark runner | Extreme scale limits; isolated kernel/binding timings |
 | Allocation | Capped-simplex projection, analytical/AD gradients, OSQP comparison | Real-data allocation stability study |
 | Estimation | Sample covariance, fitted Ledoit–Wolf, explicit normalization; chronological protocol | Live chronological estimation-quality results |
-| Data | Pagination, bounded retries, audited snapshot refresh, session alignment, stale-price checks | Live entitlement, event verification, overlap-only network refresh |
-| Interface | Synthetic and market workflows; tested synthetic interactions | Private hosted operation and live end-to-end checks |
+| Data | Pagination, bounded retries, audited snapshot refresh, session alignment, stale-price checks; live IEX history verified | SIP entitlement, event verification, overlap-only network refresh |
+| Interface | Private hosted C++ operation, live market workflow, estimation comparisons and chronological study controls | Wider hosted interaction coverage |
 
 Scope: USD US stocks and unleveraged ETFs; long-only, continuous dollar purchases, no cash sleeve. Asset eligibility currently requires user confirmation. Historical covariance is a model estimate, not a forecast guarantee. No trading, brokerage execution or return promises. Keep credentials, holdings and market-data caches outside commits. The repository remains private; no open-source license has been selected.
 

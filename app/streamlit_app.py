@@ -8,6 +8,7 @@ import streamlit as st
 from portfolio_risk import _core
 from portfolio_risk.data import AlpacaData,DataError,prepare_history,symbols_checked,completed_history_end
 from portfolio_risk.estimation import estimate_covariance
+from portfolio_risk.research import chronological_study
 
 st.set_page_config(page_title='Portfolio Risk Engine',page_icon='∇',layout='wide')
 st.title('Portfolio Risk Engine')
@@ -138,3 +139,27 @@ try:
         st.dataframe(pd.DataFrame(comparisons),width='stretch')
         st.caption('Allocation differences across models are sensitivity results, not a calibrated confidence interval.')
 except ValueError as exc: st.error(f'No feasible allocation: {exc}')
+
+if returns is not None:
+    with st.expander('Chronological variance study'):
+        st.write('Fit on preceding 63, 126 or 252 observations and evaluate the next 21 observations. Each decision starts with $100 per asset and a $200 contribution, with no concentration cap beyond 100%.')
+        st.caption('This uses independent hypothetical decisions, not your holdings or a cumulative trading strategy. Revised history and a chosen asset universe can still introduce bias.')
+        if st.button('Run chronological study'):
+            try:
+                with st.spinner('Evaluating separated training and test periods…'):
+                    study=chronological_study(returns)
+                rows=pd.DataFrame(study['results'])
+                st.write(f"{len(rows)} model evaluations across {rows['test_start'].nunique()} nonoverlapping test blocks.")
+                summary=rows.groupby(['window','method'],as_index=False).agg(
+                    evaluations=('converged','size'),
+                    mean_calibration_ratio=('calibration_ratio','mean'),
+                    mean_allocation_l1_change=('allocation_l1_change','mean'))
+                st.dataframe(summary,width='stretch')
+                st.caption('Calibration ratio = realized / estimated annual variance. A ratio near one on this short sample does not establish predictive accuracy.')
+                st.dataframe(rows.drop(columns=['weights']),width='stretch')
+                st.json({'dataset_sha256':prepared.identity,'feed':feed,'adjustment':history.adjustment,
+                         'retrieved_at':history.retrieved_at,'design':study['design'],
+                         'initial_dollars_per_asset':study['initial_dollars_per_asset'],
+                         'contribution':study['contribution'],'cap':study['cap'],'annualization':study['annualization']})
+            except ValueError as exc:
+                st.error(f'Study unavailable: {exc}')

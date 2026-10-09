@@ -4,8 +4,20 @@ Updated 2026-10-09, America/New_York.
 
 ## Live integration update (verified synthetic and Linux results)
 
-The owner has created an Alpaca account; credentials and Streamlit sign-in are
-still needed. Added server setup instructions, a read-only live report command,
+The owner configured server secrets and deployed the private Streamlit app.
+On 2026-10-09 the hosted C++ engine ran the synthetic example (13.74% volatility,
+$200 allocated to B) and retrieved IEX-adjusted SPY/BND history successfully.
+There were 379 common daily return observations, no dropped return dates, and
+the latest completed session was 2026-10-09. The hypothetical $600/$400 portfolio
+had 8.47805897% estimated annual volatility over the last 252 observations;
+the $200 contribution went to BND, yielding 7.42762416% volatility. All six
+window/estimator comparisons converged. The Share dialog showed “Make this app
+public” unchecked. [Deployment](https://portfolio-risk-eng-fwywewfctjzvsqsxvhmumt.streamlit.app/).
+Dataset identity: `2a3c00006e0e1b8b35309c375b0c00989d291c180d78ca569382c371e9905080`;
+retrieval time `2026-10-09T21:36:29.866272+00:00`, source revision `15ccd273`.
+These observations validate integration, not investment performance.
+
+Added server setup instructions, a read-only live report command,
 complete-snapshot revision auditing, independent corporate-event arithmetic,
 chronological study and benchmark commands. Corrected history requests to avoid
 future/restricted recent timestamps and isolated provider caches per session.
@@ -16,7 +28,8 @@ and 3.12, native sanitizers, all examples and the benchmark. The synthetic study
 completed 72 evaluations (mean calibration ratio 1.0096; not market evidence).
 [Benchmarks](results/benchmark.json) include validation and binding overhead:
 at 50 assets, NumPy 285.10 us, C++ analytical 182.34 us, C++ AD 884.69 us median
-on the recorded Python 3.12 runner. No live API result or hosted deployment is claimed.
+on the recorded Python 3.12 runner. The chronological runner is now accessible
+from the market-data interface; hosted study verification follows deployment.
 
 ## Completed engine milestone
 
@@ -29,8 +42,8 @@ on the recorded Python 3.12 runner. No live API result or hosted deployment is c
 
 ## Remaining work
 
-1. Private Streamlit deployment: account authorization/capacity, actual hosted C++ build, private sharing verification and synthetic interaction check. No deployment exists yet.
-2. Live Alpaca entitlement and known split/dividend checks, automated eligible-universe checks, and reduced-bandwidth incremental refresh. Current refresh audits complete adjusted snapshots; it never splices adjustment vintages.
+1. Hosted chronological study verification and additional valuation/freshness interactions.
+2. Known live split/dividend checks, automated eligible-universe checks, and reduced-bandwidth incremental refresh. IEX history access is verified; SIP entitlement is not. Current refresh audits complete adjusted snapshots; it never splices adjustment vintages.
 3. Chronological real-data estimation/allocation study and wider scale stress testing. End-to-end benchmarks are measured; isolated kernel/binding benchmarks remain separate. No market-performance advantage claimed.
 4. Final publication review: remove agreed planning files when instructed, choose license and check data-display rights. Keep repository private until explicit direction.
 
