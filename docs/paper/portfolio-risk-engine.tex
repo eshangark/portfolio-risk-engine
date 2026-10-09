@@ -674,15 +674,16 @@ feed selection and comparisons over sample and Ledoit--Wolf estimates at
 63, 126 and 252 observations when available. Zero-volatility gradients
 and infeasible caps are explained explicitly.
 
-Deployment configuration includes Python and Linux build dependencies,
-but no hosted app has been deployed or private-access tested. Ubuntu
-continuous integration compiles the engine and exercises the app test
-harness; that is distinct from a hosted session. Before deployment,
-confirm private-app capacity, build/import behavior and sharing settings
-against
-\href{https://docs.streamlit.io/deploy/streamlit-community-cloud}{Streamlit's
-documentation}. Live credentials and market-data permissions remain
-prerequisites for live operation.
+On 9 October 2026, the private Streamlit deployment successfully imported
+and ran the C++ engine. Its synthetic workflow reproduced 13.74\% volatility
+and the 200-dollar purchase of B. Authenticated IEX retrieval returned 379
+common completed daily observations for SPY/BND without dropped return dates.
+The hypothetical holdings of 600/400 dollars gave 8.4781\% estimated annual
+volatility using 252 observations; allocation of a 200-dollar contribution
+gave 7.4276\%. All six window/estimator comparisons converged. The Share
+dialog showed the public-access option unchecked. These are hosted integration
+checks at source revision \texttt{15ccd273}, separate from Ubuntu tests.
+Credentials stayed in server secrets; no brokerage execution was performed.
 
 \section{5. Numerical verification and
 reproducibility}\label{numerical-verification-and-reproducibility}
@@ -804,8 +805,8 @@ unconstrained gradient.
 
 \subsection{Remaining empirical work}\label{remaining-empirical-work}
 
-Unperformed work includes live corporate-action validation, entitlement checks,
-private hosted operation and chronological real-data analysis. The implemented
+Unperformed work includes live corporate-action validation, SIP entitlement checks
+and broader empirical analysis. The implemented
 research protocol fits windows of 63, 126 and 252 observations through a cutoff,
 then evaluates the next 21 observations, using nonoverlapping test blocks.
 Each cutoff poses an independent contribution problem with fixed initial
@@ -817,6 +818,29 @@ successive allocation \(L^1\) changes summarize variance fit and stability.
 Future-perturbation tests ensure that changing test observations cannot change
 the first fitted allocation. Present-day adjusted history and a surviving-symbol
 universe can still introduce vintage or selection bias despite correct slicing.
+
+The hosted runner at revision \texttt{8da7a371} completed 36 evaluations across
+six test blocks on the SPY/BND snapshot retrieved at
+\texttt{2026-10-09T21:38:30.377874+00:00}. Mean calibration ratios were:
+\begin{center}
+\begin{tabular}{rrr}
+\toprule
+Training observations & Sample & Ledoit--Wolf \\
+\midrule
+63 & 0.9040 & 0.8344 \\
+126 & 1.0251 & 0.9666 \\
+252 & 1.2418 & 1.1551 \\
+\bottomrule
+\end{tabular}
+\end{center}
+Each group contains only six evaluations. Mean successive allocation
+$L^1$ change was zero in each group, consistent with unchanged boundary
+solutions. This selected two-asset example cannot establish estimator superiority
+or general allocation stability. The daily-return dataset SHA-256 identity is
+\begin{quote}\ttfamily\small
+2a3c00006e0e1b8b35309c375b0c00989\\
+d291c180d78ca569382c371e9905080
+\end{quote}
 
 The benchmark compares validated risk APIs against the vectorized NumPy
 reference, with five warm-up calls and seven batches of 30 calls at 2, 10
@@ -960,8 +984,8 @@ consulted from full proofs not yet reviewed.
   \href{https://docs.streamlit.io/deploy/streamlit-community-cloud/share-your-app}{privacy/sharing},
   and
   \href{https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/app-dependencies}{dependencies}.
-  Consulted private-app allowance and Linux dependency mechanism. No
-  hosted build has been performed.
+  Consulted private-app allowance and Linux dependency mechanism. Private
+  hosted build and IEX integration were checked on 9 October 2026.
 \end{enumerate}
 
 \clearpage

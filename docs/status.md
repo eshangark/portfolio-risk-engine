@@ -29,7 +29,15 @@ completed 72 evaluations (mean calibration ratio 1.0096; not market evidence).
 [Benchmarks](results/benchmark.json) include validation and binding overhead:
 at 50 assets, NumPy 285.10 us, C++ analytical 182.34 us, C++ AD 884.69 us median
 on the recorded Python 3.12 runner. The chronological runner is now accessible
-from the market-data interface; hosted study verification follows deployment.
+from the market-data interface. At source revision `8da7a371`, hosted SPY/BND
+history produced 36 live model evaluations over six nonoverlapping 21-observation
+test blocks. Each model had six evaluations. Mean calibration ratios for
+sample / Ledoit-Wolf were 0.9040 / 0.8344 (63 observations), 1.0251 / 0.9666
+(126), and 1.2418 / 1.1551 (252). Mean successive allocation L1 changes were
+zero in every group, reflecting boundary solutions in this two-asset example.
+Dataset identity matched the integration snapshot above; retrieval time was
+`2026-10-09T21:38:30.377874+00:00`. This is a short chosen-universe study,
+not a general estimator ranking, unbiased vintage test or return backtest.
 
 ## Completed engine milestone
 
@@ -42,7 +50,11 @@ from the market-data interface; hosted study verification follows deployment.
 
 ## Remaining work
 
-1. Hosted chronological study verification and additional valuation/freshness interactions.
+The interface addition passed all three jobs in
+[run 37994607531](https://github.com/eshangark/portfolio-risk-engine/actions/runs/37994607531)
+at `8da7a371`: Python 3.10, Python 3.12 and native sanitizers.
+
+1. Additional hosted valuation/freshness interactions and broader real-data studies.
 2. Known live split/dividend checks, automated eligible-universe checks, and reduced-bandwidth incremental refresh. IEX history access is verified; SIP entitlement is not. Current refresh audits complete adjusted snapshots; it never splices adjustment vintages.
 3. Chronological real-data estimation/allocation study and wider scale stress testing. End-to-end benchmarks are measured; isolated kernel/binding benchmarks remain separate. No market-performance advantage claimed.
 4. Final publication review: remove agreed planning files when instructed, choose license and check data-display rights. Keep repository private until explicit direction.

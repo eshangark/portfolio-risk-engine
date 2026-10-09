@@ -9,7 +9,7 @@ Theory is in the [PDF](paper/portfolio-risk-engine.pdf). Verification below refe
 | R03 | Risk, gradient, attribution | 2 | C++ engine; analytical/AD/NumPy tests | Verified synthetic |
 | R04 | Dollar normalization and transfers | 2 | dollar_gradient; finite differences | Verified synthetic |
 | R05 | Valid covariance sensitivity | 1, 2 | shrinkage_sensitivity; fixed-alpha path tests | Verified synthetic |
-| R06 | Estimated shrinkage and windows | 1, 4 | Fitted Ledoit–Wolf normalization tests; app comparison | Estimator verified; live study pending |
+| R06 | Estimated shrinkage and windows | 1, 4 | Fitted Ledoit–Wolf normalization tests; hosted comparisons and chronological study | Verified bounded live study |
 | R07 | C++ and Python bindings | 4 | CMake, wheel installation on two Python versions | Verified Linux |
 | R08 | Reverse-mode ownership and accumulation | 2 | Shared/reset/lifetime tests; native sanitizers | Verified covered cases |
 | R09 | Backfill, pagination, retries, cache, incremental | 4 | data.py; mocked HTTP tests | Implemented except incremental refresh |
@@ -21,7 +21,7 @@ Theory is in the [PDF](paper/portfolio-risk-engine.pdf). Verification below refe
 | R15 | Invariances and exact/local comparisons | 2, 5 | Reference tests; examples; app | Verified synthetic |
 | R16 | Private hosted interface | 4 | AppTest; hosted synthetic and IEX checks; Share dialog private | Verified deployment 2026-10-09 |
 | R17 | Reproducible sourced technical paper | All | Standalone LaTeX, PDF, measured JSON reports | Compiled; ongoing research |
-| R18 | Chronological studies and fair benchmarks | 5 | Study design | Pending |
+| R18 | Chronological studies and fair benchmarks | 5 | Synthetic 72 evaluations; hosted SPY/BND 36 evaluations; measured API timings | Verified bounded studies; broader study pending |
 | R19 | CI and credentials handling | 4, 5 | tests.yml; ignored secrets; server-side adapter; hosted authenticated retrieval | CI and live IEX access verified |
 
 Source: [C++](../cpp/src/engine.cpp), [reference](../src/portfolio_risk/reference.py), [data](../src/portfolio_risk/data.py), [estimation](../src/portfolio_risk/estimation.py), [interface](../app/streamlit_app.py). Tests: [reference](../tests/test_reference.py), [engine](../tests/test_engine.py), [data](../tests/test_data.py), [app](../tests/test_app.py).
@@ -34,5 +34,7 @@ independent event-return arithmetic. R18 adds `chronological_study`, tests provi
 future observations cannot change the first fitted allocation, and a repeated
 validated-API benchmark, measured on Linux. The chronological runner completed 72
 synthetic evaluations. Hosted IEX retrieval is now verified; live event and
-chronological study evidence remain separate. See
+broader empirical validation remain separate. The hosted chronological study
+completed 36 evaluations at `8da7a371`; detailed results and limitations are
+recorded in [status](status.md). See
 [live setup](live-setup.md) for the concrete account and deployment steps.

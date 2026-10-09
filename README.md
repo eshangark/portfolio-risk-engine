@@ -56,8 +56,8 @@ In the worked example, weights $(0.6,0.4)$ and covariance entries $(.04,.006;.00
 | Area | Implemented | Remaining validation |
 | --- | --- | --- |
 | C++ / autodiff | Risk, attribution, dollar and shrinkage sensitivities; owned tape; scale tests; benchmark runner | Extreme scale limits; isolated kernel/binding timings |
-| Allocation | Capped-simplex projection, analytical/AD gradients, OSQP comparison | Real-data allocation stability study |
-| Estimation | Sample covariance, fitted Ledoit–Wolf, explicit normalization; chronological protocol | Live chronological estimation-quality results |
+| Allocation | Capped-simplex projection, analytical/AD gradients, OSQP comparison; hosted two-asset study | Broader allocation stability study |
+| Estimation | Sample covariance, fitted Ledoit–Wolf, explicit normalization; 36 hosted chronological evaluations | Broader estimation-quality study |
 | Data | Pagination, bounded retries, audited snapshot refresh, session alignment, stale-price checks; live IEX history verified | SIP entitlement, event verification, overlap-only network refresh |
 | Interface | Private hosted C++ operation, live market workflow, estimation comparisons and chronological study controls | Wider hosted interaction coverage |
 

@@ -142,7 +142,7 @@ except ValueError as exc: st.error(f'No feasible allocation: {exc}')
 
 if returns is not None:
     with st.expander('Chronological variance study'):
-        st.write('Fit on preceding 63, 126 or 252 observations and evaluate the next 21 observations. Each decision starts with $100 per asset and a $200 contribution, with no concentration cap beyond 100%.')
+        st.write('Fit on preceding 63, 126 or 252 observations and evaluate the next 21 observations. Each decision starts with 100 dollars per asset and a 200-dollar contribution, with no concentration cap beyond 100%.')
         st.caption('This uses independent hypothetical decisions, not your holdings or a cumulative trading strategy. Revised history and a chosen asset universe can still introduce bias.')
         if st.button('Run chronological study'):
             try:
