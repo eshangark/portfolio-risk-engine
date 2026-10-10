@@ -107,7 +107,7 @@ with overview:
     col2.metric('Portfolio value',f'${holdings.sum():,.2f}')
     st.caption('Volatility measures how widely annual returns may vary under this historical model. It is not an expected return or a maximum possible loss.')
     with st.expander('How we calculate this'):
-        st.write('1. Divide each holding by total portfolio value to get its weight. 2. Combine weights with asset variances and co-movement. 3. Take the square root to express risk as volatility.')
+        st.write('1. Divide each holding by total portfolio value to get its weight.\n2. Combine weights with asset variances and co-movement.\n3. Take the square root to express risk as volatility.')
         st.latex(r'V=\sum_i h_i,\quad w_i=h_i/V,\quad \sigma=\sqrt{w^T\Sigma w}')
         st.write(f'Here, total value is ${holdings.sum():,.2f} and estimated variance is {result["volatility"]**2:.6f}. Its square root is {result["volatility"]:.2%}.')
     rc=result['contributions']; grad=result['gradient']
@@ -121,7 +121,7 @@ with overview:
             st.latex(r'RC_i=w_i(\Sigma w)_i/\sigma,\qquad \sum_i RC_i=\sigma')
             st.dataframe(frame.set_index('Asset'),width='stretch')
         leader=int(np.argmax(rc)); st.write(f"{symbols[leader]} contributes the most estimated volatility: {rc[leader]/result['volatility']:.1%}, compared with {weights[leader]:.1%} of capital.")
-        st.bar_chart(frame.set_index('Asset')[['Capital weight','Share of volatility']])
+        st.bar_chart(frame.set_index('Asset')[['Capital weight','Share of volatility']],stack=False)
     else:
         st.dataframe(frame); st.info('Volatility is zero; the usual volatility gradient is unavailable.')
 
@@ -156,7 +156,7 @@ with allocation_tab:
         st.write(f"Allocated volatility: {np.sqrt(allocation['variance']):.4%}. Variance improvement over a feasible projected-equal-purchase baseline: {allocation['improvement']:.6g}.")
         st.caption('Lower estimated variance is the objective. This does not maximize returns or guarantee lower future risk.')
         with st.expander('How the allocation is calculated'):
-            st.write('1. Check whether purchases can satisfy the limit. 2. Search for purchases that reduce variance. 3. Verify the budget, caps, and convergence.')
+            st.write('1. Check whether purchases can satisfy the limit.\n2. Search for purchases that reduce variance.\n3. Verify the budget, caps, and convergence.')
             st.latex(r'\min_{x}\; w(x)^T\Sigma w(x),\quad w(x)=(h+x)/(V+B)')
             st.caption('Purchases are nonnegative, add up to the contribution, and keep each final weight within the limit.')
         with st.expander('Optimization diagnostics'):
