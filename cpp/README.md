@@ -6,7 +6,8 @@ capped-simplex projection and a contribution-only quadratic allocator.
 
 The allocator uses post-contribution purchase fractions and spectral scaling;
 its default gradient is computed through the tape. An analytical mode provides
-an independent check. See the technical paper, chapters 2 and 3.
+an independent check. The Python reference implementation and stress tests
+check gradients, feasibility, and agreement with an independent quadratic solver.
 
 Native validation without Python:
 
