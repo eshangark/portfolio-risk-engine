@@ -12,11 +12,19 @@ from portfolio_risk.research import chronological_study
 from portfolio_risk.backtest import contribution_backtest
 
 st.set_page_config(page_title='Portfolio Risk Engine',page_icon='∇',layout='wide')
-st.title('Portfolio Risk Engine')
-st.caption('Understand risk, compare decisions, and inspect how the model changes the answer.')
+st.markdown("""<style>
+.block-container {max-width: 1200px; padding-top: 2rem;}
+h1 {letter-spacing: -.04em;} h2,h3 {letter-spacing: -.02em;}
+[data-testid="stMetric"] {background: #EEF2F5; border-radius: 16px; padding: 18px;}
+.stButton > button {border-radius: 10px;}
+</style>""", unsafe_allow_html=True)
+st.caption('PORTFOLIO ANALYSIS')
+st.title('Understand your portfolio risk')
+st.write('See where risk comes from, compare a purchase, and explore how to invest a new contribution.')
+st.caption('Start with the demo, or choose market data in the sidebar. Calculations update when you change an input. No orders are placed.')
 source=st.sidebar.radio('Data source',['Synthetic example','Alpaca market data'])
 st.sidebar.caption(f'Numerical engine {_core.__version__} · C++17')
-st.sidebar.markdown('USD · long-only · fractional shares · no cash sleeve')
+st.sidebar.caption('Supported: USD US stocks and unleveraged ETFs. Purchases only; fractional shares; no cash balance.')
 
 
 def credentials():
@@ -47,8 +55,8 @@ else:
     notional=st.sidebar.number_input('Portfolio value for hypothetical weights ($)',min_value=1.,value=1000.) if unit=='Weights' else None
     feed=st.sidebar.selectbox('Feed',['iex','sip'])
     st.sidebar.caption('IEX covers one exchange. SIP access depends on your subscription.')
-    method=st.sidebar.selectbox('Covariance method',['sample','ledoit_wolf'])
-    window=st.sidebar.selectbox('Completed return observations',[63,126,252],index=2)
+    method=st.sidebar.selectbox('Risk estimation',['sample','ledoit_wolf'],format_func=lambda x: {'sample':'Historical sample','ledoit_wolf':'Smoothed estimate (Ledoit–Wolf)'}[x],help='Sample uses observed co-movement directly. Smoothing reduces sensitivity to noisy estimates.')
+    window=st.sidebar.selectbox('Days used to estimate risk',[63,126,252],index=2,help='Trading observations. A shorter window reacts faster; a longer window includes more history.')
     history_days=st.sidebar.selectbox('History lookback (calendar days)',[550,2200])
     confirmed=st.sidebar.checkbox('My symbols are US stocks or unleveraged ETFs, with no cash positions.')
     if not confirmed: st.info('Confirm the supported universe to load your portfolio.'); st.stop()
@@ -92,93 +100,124 @@ else:
 
 weights=holdings/holdings.sum()
 result=_core.risk(weights,cov,autodiff=True)
-col1,col2=st.columns(2)
-col1.metric('Estimated annual volatility',f"{result['volatility']:.2%}")
-col2.metric('Portfolio value',f'${holdings.sum():,.2f}')
-st.caption('Constant-weight return volatility under a fixed covariance estimate; not a prediction or a complete investment objective.')
-rc=result['contributions']; grad=result['gradient']
-frame=pd.DataFrame({'Asset':symbols,'Capital weight':weights,'Dollar holding':holdings})
-if rc is not None:
-    frame['Risk contribution']=rc; frame['Share of volatility']=rc/result['volatility']
-    frame['Marginal volatility']=grad
-    st.dataframe(frame.set_index('Asset'),width='stretch')
-    leader=int(np.argmax(rc)); st.write(f"{symbols[leader]} contributes the most estimated volatility: {rc[leader]/result['volatility']:.1%}, compared with {weights[leader]:.1%} of capital.")
-    st.bar_chart(frame.set_index('Asset')[['Capital weight','Share of volatility']])
-else:
-    st.dataframe(frame); st.info('Volatility is zero; the usual volatility gradient is unavailable.')
+overview,purchase_tab,allocation_tab,history_tab=st.tabs(['Overview','Compare a purchase','Allocate a contribution','Historical checks'])
+with overview:
+    col1,col2=st.columns(2)
+    col1.metric('Estimated annual volatility',f"{result['volatility']:.2%}")
+    col2.metric('Portfolio value',f'${holdings.sum():,.2f}')
+    st.caption('Volatility measures how widely annual returns may vary under this historical model. It is not an expected return or a maximum possible loss.')
+    with st.expander('How we calculate this'):
+        st.write('1. Divide each holding by total portfolio value to get its weight. 2. Combine weights with asset variances and co-movement. 3. Take the square root to express risk as volatility.')
+        st.latex(r'V=\sum_i h_i,\quad w_i=h_i/V,\quad \sigma=\sqrt{w^T\Sigma w}')
+        st.write(f'Here, total value is ${holdings.sum():,.2f} and estimated variance is {result["volatility"]**2:.6f}. Its square root is {result["volatility"]:.2%}.')
+    rc=result['contributions']; grad=result['gradient']
+    frame=pd.DataFrame({'Asset':symbols,'Capital weight':weights,'Dollar holding':holdings})
+    if rc is not None:
+        frame['Risk contribution']=rc; frame['Share of volatility']=rc/result['volatility']
+        frame['Marginal volatility']=grad
+        st.dataframe(frame[['Asset','Capital weight','Dollar holding','Share of volatility']].set_index('Asset'),width='stretch',column_config={'Capital weight':st.column_config.NumberColumn(format='percent'),'Share of volatility':st.column_config.NumberColumn(format='percent'),'Dollar holding':st.column_config.NumberColumn(format='dollar')})
+        st.caption('Capital weight is your share of invested money. Share of volatility is each asset’s contribution to total risk; it can be negative when an asset offsets other risks.')
+        with st.expander('Risk attribution mathematics'):
+            st.latex(r'RC_i=w_i(\Sigma w)_i/\sigma,\qquad \sum_i RC_i=\sigma')
+            st.dataframe(frame.set_index('Asset'),width='stretch')
+        leader=int(np.argmax(rc)); st.write(f"{symbols[leader]} contributes the most estimated volatility: {rc[leader]/result['volatility']:.1%}, compared with {weights[leader]:.1%} of capital.")
+        st.bar_chart(frame.set_index('Asset')[['Capital weight','Share of volatility']])
+    else:
+        st.dataframe(frame); st.info('Volatility is zero; the usual volatility gradient is unavailable.')
 
-st.subheader('Compare a new purchase')
-asset=st.selectbox('Buy asset',symbols)
-amount=st.number_input('New cash purchase ($)',min_value=0.,value=100.)
-delta=np.zeros(len(symbols)); delta[symbols.index(asset)]=amount
-new_h=holdings+delta; after=_core.risk(new_h/new_h.sum(),cov)
-exact=after['volatility']-result['volatility']
-st.write(f'After purchase: {after["volatility"]:.4%} volatility; change {100*exact:+.4f} percentage points.')
-if grad is not None:
-    linear=float(_core.dollar_gradient(holdings,cov)@delta)
-    st.write(f'Local derivative approximation: {100*linear:+.4f} percentage points. Approximation error: {100*(linear-exact):+.4f} points.')
+with purchase_tab:
+    st.subheader('What changes if you buy more?')
+    st.write('Choose an asset and an amount. We add the dollars, recalculate every weight, and compare the resulting risk with today’s portfolio.')
+    asset=st.selectbox('Buy asset',symbols)
+    amount=st.number_input('New cash purchase ($)',min_value=0.,value=100.)
+    delta=np.zeros(len(symbols)); delta[symbols.index(asset)]=amount
+    new_h=holdings+delta; after=_core.risk(new_h/new_h.sum(),cov)
+    exact=after['volatility']-result['volatility']
+    st.write(f'After purchase: {after["volatility"]:.4%} volatility; change {100*exact:+.4f} percentage points.')
+    if grad is not None:
+        linear=float(_core.dollar_gradient(holdings,cov)@delta)
+        st.caption(f'Local derivative approximation: {100*linear:+.4f} percentage points. Approximation error: {100*(linear-exact):+.4f} points.')
 
-st.subheader('Allocate a contribution')
-budget=st.number_input('Total contribution ($)',min_value=0.,value=200.)
-cap=st.slider('Maximum post-contribution weight per asset',min_value=0.01,max_value=1.,value=.60,step=.01)
-try:
-    allocation=_core.allocate(holdings,budget,cov,np.full(len(symbols),cap))
-    if not allocation['converged']: st.warning('Iteration limit reached; treat this as an unfinished optimization result.')
-    st.dataframe(pd.DataFrame({'Asset':symbols,'Purchase dollars':allocation['purchases'],'Resulting weight':allocation['weights']}).set_index('Asset'),width='stretch')
-    st.write(f"Allocated volatility: {np.sqrt(allocation['variance']):.4%}. Variance improvement over a feasible projected-equal-purchase baseline: {allocation['improvement']:.6g}.")
-    with st.expander('Optimization diagnostics'):
-        st.json({k:v for k,v in allocation.items() if k not in ('purchases','weights')})
+    with st.expander('See the calculation'):
+        st.latex(r'w_i^{new}=(h_i+\Delta h_i)/(V+\sum_j\Delta h_j)')
+        st.write('The exact result recalculates volatility with the new weights. The derivative is a local approximation; larger purchases can make it less accurate.')
+with allocation_tab:
+    st.subheader('Where could a new contribution go?')
+    st.write('The engine distributes your contribution to minimize estimated variance while respecting your concentration limit. Existing holdings are kept.')
+    budget=st.number_input('Total contribution ($)',min_value=0.,value=200.)
+    cap=st.slider('Maximum post-contribution weight per asset',min_value=0.01,max_value=1.,value=.60,step=.01)
+    try:
+        with st.spinner('Checking constraints and minimizing estimated variance…'):
+            allocation=_core.allocate(holdings,budget,cov,np.full(len(symbols),cap))
+        if not allocation['converged']:
+            st.warning('The solver did not finish. No allocation recommendation is shown; change the inputs and try again.')
+            raise ValueError('Optimization has not converged.')
+        st.dataframe(pd.DataFrame({'Asset':symbols,'Purchase dollars':allocation['purchases'],'Resulting weight':allocation['weights']}).set_index('Asset'),width='stretch')
+        st.write(f"Allocated volatility: {np.sqrt(allocation['variance']):.4%}. Variance improvement over a feasible projected-equal-purchase baseline: {allocation['improvement']:.6g}.")
+        st.caption('Lower estimated variance is the objective. This does not maximize returns or guarantee lower future risk.')
+        with st.expander('How the allocation is calculated'):
+            st.write('1. Check whether purchases can satisfy the limit. 2. Search for purchases that reduce variance. 3. Verify the budget, caps, and convergence.')
+            st.latex(r'\min_{x}\; w(x)^T\Sigma w(x),\quad w(x)=(h+x)/(V+B)')
+            st.caption('Purchases are nonnegative, add up to the contribution, and keep each final weight within the limit.')
+        with st.expander('Optimization diagnostics'):
+            st.json({k:v for k,v in allocation.items() if k not in ('purchases','weights')})
+        if returns is not None:
+            comparisons=[]
+            for count in (63,126,252):
+                if len(returns)<count: continue
+                for name in ('sample','ledoit_wolf'):
+                    alternative=estimate_covariance(returns.iloc[-count:].to_numpy(),name)
+                    solution=_core.allocate(holdings,budget,alternative.covariance,np.full(len(symbols),cap))
+                    comparisons.append({'Window':count,'Estimator':name,'Volatility':np.sqrt(solution['variance']),
+                                        'Converged':solution['converged'],**{s:float(x) for s,x in zip(symbols,solution['purchases'])}})
+            st.subheader('Sensitivity to estimation choices')
+            st.dataframe(pd.DataFrame(comparisons),width='stretch')
+            st.caption('Allocation differences across models are sensitivity results, not a calibrated confidence interval.')
+    except ValueError as exc: st.error(f'No feasible allocation: {exc}')
+with history_tab:
+
     if returns is not None:
-        comparisons=[]
-        for count in (63,126,252):
-            if len(returns)<count: continue
-            for name in ('sample','ledoit_wolf'):
-                alternative=estimate_covariance(returns.iloc[-count:].to_numpy(),name)
-                solution=_core.allocate(holdings,budget,alternative.covariance,np.full(len(symbols),cap))
-                comparisons.append({'Window':count,'Estimator':name,'Volatility':np.sqrt(solution['variance']),
-                                    'Converged':solution['converged'],**{s:float(x) for s,x in zip(symbols,solution['purchases'])}})
-        st.subheader('Sensitivity to estimation choices')
-        st.dataframe(pd.DataFrame(comparisons),width='stretch')
-        st.caption('Allocation differences across models are sensitivity results, not a calibrated confidence interval.')
-except ValueError as exc: st.error(f'No feasible allocation: {exc}')
-
-if returns is not None:
-    with st.expander('Chronological variance study'):
-        st.write('Fit on preceding 63, 126 or 252 observations and evaluate the next 21 observations. Each decision starts with 100 dollars per asset and a 200-dollar contribution, with no concentration cap beyond 100%.')
-        st.caption('This uses independent hypothetical decisions, not your holdings or a cumulative trading strategy. Revised history and a chosen asset universe can still introduce bias.')
-        if st.button('Run chronological study'):
-            try:
-                with st.spinner('Evaluating separated training and test periods…'):
-                    study=chronological_study(returns)
-                rows=pd.DataFrame(study['results'])
-                st.write(f"{len(rows)} model evaluations across {rows['test_start'].nunique()} nonoverlapping test blocks.")
-                summary=rows.groupby(['window','method'],as_index=False).agg(
-                    evaluations=('converged','size'),
-                    mean_calibration_ratio=('calibration_ratio','mean'),
-                    mean_allocation_l1_change=('allocation_l1_change','mean'))
-                st.dataframe(summary,width='stretch')
-                st.caption('Calibration ratio = realized / estimated annual variance. A ratio near one on this short sample does not establish predictive accuracy.')
-                st.dataframe(rows.drop(columns=['weights']),width='stretch')
-                st.json({'dataset_sha256':prepared.identity,'feed':feed,'adjustment':history.adjustment,
-                         'retrieved_at':history.retrieved_at,'design':study['design'],
-                         'initial_dollars_per_asset':study['initial_dollars_per_asset'],
-                         'contribution':study['contribution'],'cap':study['cap'],'annualization':study['annualization']})
-            except ValueError as exc:
-                st.error(f'Study unavailable: {exc}')
-    with st.expander('Historical contribution backtest'):
-        st.write('Start with 1,000 hypothetical dollars equally divided among the selected assets. Every 21 observations, invest 200 dollars using the preceding 126 observations and Ledoit-Wolf covariance. Compare with equal-dollar purchases using identical cash flows.')
-        st.caption('Holdings drift with each daily return. All decisions precede the return being evaluated. Fees, taxes, spreads and executable prices are excluded. Provider dividend conventions and historical revisions limit the interpretation.')
-        if st.button('Run historical backtest'):
-            try:
-                with st.spinner('Simulating chronological contributions…'):
-                    if prepared.dropped_return_dates:
-                        raise ValueError('Backtests require complete adjacent-session history; missing daily returns cannot be skipped.')
-                    backtest=contribution_backtest(returns)
-                st.dataframe(pd.DataFrame({name:backtest[name] for name in ('optimized','equal_purchases')}).T,width='stretch')
-                st.write(f"{backtest['observations']} evaluated observations; {len(backtest['decisions'])} contributions totaling {backtest['total_contributions']:,.2f} dollars.")
-                ledger=pd.DataFrame(backtest['ledger']).set_index('date')
-                st.line_chart(ledger[['wealth','equal_purchase_wealth']])
-                st.caption('Terminal wealth includes deposits. Time-weighted return removes the direct effect of deposits; volatility and drawdown use the daily time-weighted return series.')
-                st.json({k:v for k,v in backtest.items() if k not in ('ledger','decisions','optimized','equal_purchases')})
-            except ValueError as exc:
-                st.error(f'Backtest unavailable: {exc}')
+        st.subheader('Check the model against history')
+        st.write('These are hypothetical historical experiments. Use them to assess the model, rather than as a promise about future performance.')
+        with st.expander('Does estimated risk match later observations?'):
+            st.write('Fit on preceding 63, 126 or 252 observations and evaluate the next 21 observations. Each decision starts with 100 dollars per asset and a 200-dollar contribution, with no concentration cap beyond 100%.')
+            st.caption('This uses independent hypothetical decisions, not your holdings or a cumulative trading strategy. Revised history and a chosen asset universe can still introduce bias.')
+            if st.button('Run chronological study'):
+                try:
+                    with st.spinner('Evaluating separated training and test periods…'):
+                        study=chronological_study(returns)
+                    rows=pd.DataFrame(study['results'])
+                    st.write(f"{len(rows)} model evaluations across {rows['test_start'].nunique()} nonoverlapping test blocks.")
+                    summary=rows.groupby(['window','method'],as_index=False).agg(
+                        evaluations=('converged','size'),
+                        mean_calibration_ratio=('calibration_ratio','mean'),
+                        mean_allocation_l1_change=('allocation_l1_change','mean'))
+                    st.dataframe(summary,width='stretch')
+                    st.caption('Calibration ratio = realized / estimated annual variance. A ratio near one on this short sample does not establish predictive accuracy.')
+                    st.dataframe(rows.drop(columns=['weights']),width='stretch')
+                    st.json({'dataset_sha256':prepared.identity,'feed':feed,'adjustment':history.adjustment,
+                             'retrieved_at':history.retrieved_at,'design':study['design'],
+                             'initial_dollars_per_asset':study['initial_dollars_per_asset'],
+                             'contribution':study['contribution'],'cap':study['cap'],'annualization':study['annualization']})
+                except ValueError as exc:
+                    st.error(f'Study unavailable: {exc}')
+        with st.expander('Historical contribution backtest'):
+            st.write('Start with 1,000 hypothetical dollars equally divided among the selected assets. Every 21 observations, invest 200 dollars using the preceding 126 observations and Ledoit-Wolf covariance. Compare with equal-dollar purchases using identical cash flows.')
+            st.caption('Holdings drift with each daily return. All decisions precede the return being evaluated. Fees, taxes, spreads and executable prices are excluded. Provider dividend conventions and historical revisions limit the interpretation.')
+            if st.button('Run historical backtest'):
+                try:
+                    with st.spinner('Simulating chronological contributions…'):
+                        if prepared.dropped_return_dates:
+                            raise ValueError('Backtests require complete adjacent-session history; missing daily returns cannot be skipped.')
+                        backtest=contribution_backtest(returns)
+                    metrics=pd.DataFrame({name:backtest[name] for name in ('optimized','equal_purchases')}).T.rename(index={'optimized':'Minimum-variance purchases','equal_purchases':'Equal-dollar purchases'},columns={'terminal_wealth':'Ending value ($)','time_weighted_return':'Return excluding deposits','annualized_volatility':'Annual volatility','max_drawdown':'Largest decline'})
+                    st.dataframe(metrics,width='stretch',column_config={k:st.column_config.NumberColumn(format='percent') for k in ('Return excluding deposits','Annual volatility','Largest decline')})
+                    st.write(f"{backtest['observations']} evaluated observations; {len(backtest['decisions'])} contributions totaling {backtest['total_contributions']:,.2f} dollars.")
+                    ledger=pd.DataFrame(backtest['ledger']).set_index('date')
+                    st.line_chart(ledger[['wealth','equal_purchase_wealth']])
+                    st.caption('Terminal wealth includes deposits. Time-weighted return removes the direct effect of deposits; volatility and drawdown use the daily time-weighted return series.')
+                    st.json({k:v for k,v in backtest.items() if k not in ('ledger','decisions','optimized','equal_purchases')})
+                except ValueError as exc:
+                    st.error(f'Backtest unavailable: {exc}')
+    else:
+        st.info('Historical checks need market observations. Choose Alpaca market data in the sidebar and retrieve history to begin.')

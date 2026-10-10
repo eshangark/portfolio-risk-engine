@@ -24,7 +24,7 @@ per session and never requests history through a future cutoff.
 
 Choose a history lookback, retrieve data and expand the chronological study or
 historical contribution backtest. These use fixed hypothetical policies, not
-account holdings or order submission. See [validation](../docs/validation.md).
+account holdings or order submission. The Overview explains risk attribution; Compare a purchase recalculates weights; Allocate a contribution minimizes estimated variance; Historical checks evaluate fixed hypothetical policies.
 When changing the installed Python/C++ package, update the dependency manifest
 to trigger a Community Cloud rebuild; a script rerun alone can retain an older
 installed wheel. Check the displayed engine version after deployment.
