@@ -44,7 +44,24 @@ For fixed symmetric PSD covariance $\Sigma$ and long-only weights summing to one
 
 $$v=w^T\Sigma w,\qquad \sigma=\sqrt{v},\qquad \nabla_w\sigma=\Sigma w/\sigma\quad(\sigma>0).$$
 
+- $v$: portfolio return variance.
+- $w$: vector of portfolio weights.
+- $T$ in $w^T$: transpose.
+- $\nabla_w$: vector of partial derivatives with respect to weights.
+
+
 Risk contribution is $RC_i=w_i\partial_i\sigma$, with $\sum_i RC_i=\sigma$. Adding dollars changes all normalized weights. The allocator minimizes the variance of $(h+x)/(V+B)$ with $x\ge0$, $\sum_i x_i=B$, and post-contribution concentration caps. Its output includes feasibility and projected-gradient residuals, iteration count and convergence status.
+
+- $RC_i$: volatility contribution of asset $i$.
+- $i$: asset index; $w_i$ is its portfolio weight.
+- $\partial_i$: partial derivative with respect to weight $i$.
+- $\sum_i$: sum across all assets.
+- $h$: existing dollar holdings vector.
+- $x$: purchase dollars vector; $x_i$ is the purchase for asset $i$.
+- $V$: existing total portfolio value.
+- $B$: new contribution budget.
+- $\ge$: greater than or equal to; purchases cannot be negative.
+
 
 In the worked example, weights $(0.6,0.4)$ and covariance entries $(.04,.006;.006,.01)$ give **13.74045% volatility**. Asset A holds 60% of capital but contributes **83.89831%** of volatility. A $200 contribution to holdings $(600,400)$ with 60% caps is allocated entirely to B, yielding weights $(.5,.5)$ and variance .0155. Inputs are hypothetical annual quantities.
 

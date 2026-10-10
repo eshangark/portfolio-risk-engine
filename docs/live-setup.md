@@ -57,7 +57,14 @@ daily returns are missing; they never silently skip unknown wealth changes.
 `portfolio_risk.adjustments.audit_event` compares a provider-adjusted return with
 an independently specified split ratio and cash distribution. For a pre-event
 price P, post-event price Q, new shares per old share k and cash per old share d,
-the holder's event return is `(k*Q+d)/P-1`. Supply checked event terms and prices;
+the holder's event return is `(k*Q+d)/P-1`.
+
+- `k`: new shares received per old share.
+- `Q`: price per new share after the event.
+- `d`: cash distribution per old share.
+- `P`: price per old share before the event.
+
+Supply checked event terms and prices;
 a synthetic arithmetic test alone cannot certify Alpaca's dividend convention.
 
 Every expired or manually refreshed adjusted history is fetched as a complete

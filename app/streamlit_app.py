@@ -109,6 +109,7 @@ with overview:
     with st.expander('How we calculate this'):
         st.write('1. Divide each holding by total portfolio value to get its weight.\n2. Combine weights with asset variances and co-movement.\n3. Take the square root to express risk as volatility.')
         st.latex(r'V=\sum_i h_i,\quad w_i=h_i/V,\quad \sigma=\sqrt{w^T\Sigma w}')
+        st.markdown('- $V$: total portfolio value in dollars.\n- $h_i$: dollars held in asset $i$.\n- $w_i$: asset $i$’s fraction of portfolio value; $w$ collects all weights.\n- $i$: an asset index.\n- $\\sum_i$: add the quantity across all assets.\n- $T$ in $w^T$: transpose, which turns the weight column into a row.')
         st.write(f'Here, total value is ${holdings.sum():,.2f} and estimated variance is {result["volatility"]**2:.6f}. Its square root is {result["volatility"]:.2%}.')
     rc=result['contributions']; grad=result['gradient']
     frame=pd.DataFrame({'Asset':symbols,'Capital weight':weights,'Dollar holding':holdings})
@@ -119,6 +120,7 @@ with overview:
         st.caption('Capital weight is your share of invested money. Share of volatility is each asset’s contribution to total risk; it can be negative when an asset offsets other risks.')
         with st.expander('Risk attribution mathematics'):
             st.latex(r'RC_i=w_i(\Sigma w)_i/\sigma,\qquad \sum_i RC_i=\sigma')
+            st.markdown('- $RC_i$: asset $i$’s contribution to portfolio volatility.\n- $w$: vector of portfolio weights; $w_i$ is the weight of asset $i$.\n- $i$: an asset index; $(\\Sigma w)_i$ selects entry $i$ of the matrix–vector product.\n- $\\sum_i$: sum across assets.')
             st.dataframe(frame.set_index('Asset'),width='stretch')
         leader=int(np.argmax(rc)); st.write(f"{symbols[leader]} contributes the most estimated volatility: {rc[leader]/result['volatility']:.1%}, compared with {weights[leader]:.1%} of capital.")
         st.bar_chart(frame.set_index('Asset')[['Capital weight','Share of volatility']],stack=False)
@@ -140,6 +142,7 @@ with purchase_tab:
 
     with st.expander('See the calculation'):
         st.latex(r'w_i^{new}=(h_i+\Delta h_i)/(V+\sum_j\Delta h_j)')
+        st.markdown('- $w_i^{new}$: asset $i$’s weight after the purchase; “new” is a label, not an exponent.\n- $h_i$: existing dollars held in asset $i$.\n- $\\Delta h_i$: new dollars purchased in asset $i$; $\\Delta$ means change.\n- $V$: total portfolio value before the purchase.\n- $i$ and $j$: asset indices; $\\sum_j\\Delta h_j$ is the total new money added.')
         st.write('The exact result recalculates volatility with the new weights. The derivative is a local approximation; larger purchases can make it less accurate.')
 with allocation_tab:
     st.subheader('Where could a new contribution go?')
@@ -158,6 +161,7 @@ with allocation_tab:
         with st.expander('How the allocation is calculated'):
             st.write('1. Check whether purchases can satisfy the limit.\n2. Search for purchases that reduce variance.\n3. Verify the budget, caps, and convergence.')
             st.latex(r'\min_{x}\; w(x)^T\Sigma w(x),\quad w(x)=(h+x)/(V+B)')
+            st.markdown('- $x$: vector of purchase dollars, one entry per asset.\n- $h$: vector of existing dollar holdings.\n- $V$: existing total portfolio value.\n- $B$: total contribution to distribute.\n- $w(x)$: portfolio weights resulting from purchases $x$.\n- $\\min_x$: choose feasible purchases $x$ that make the objective as small as possible.\n- $T$: transpose; it turns the weight column into a row.')
             st.caption('Purchases are nonnegative, add up to the contribution, and keep each final weight within the limit.')
         with st.expander('Optimization diagnostics'):
             st.json({k:v for k,v in allocation.items() if k not in ('purchases','weights')})
