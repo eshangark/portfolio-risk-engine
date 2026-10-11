@@ -26,6 +26,14 @@ st.markdown(f"""<style>
 [data-testid="stVerticalBlockBorderWrapper"] > div {{border-color: {palette['border']} !important;}}
 [data-testid="stMetric"], [data-testid="stExpander"], [data-testid="stAlert"], [data-testid="stJson"] {{background: {palette['surface']}; color: {palette['text']}; border-color: {palette['border']};}}
 [data-testid="stExpander"] summary, [data-testid="stExpander"] svg, [data-testid="stHeader"] button, [data-testid="stSidebar"] button {{color: {palette['text']} !important;}}
+[data-testid="stExpander"] details > summary,
+[data-testid="stExpander"] details[open] > summary,
+[data-testid="stExpander"] details > summary:hover,
+[data-testid="stExpander"] details > summary:focus {{background: {palette['surface']} !important; color: {palette['text']} !important;}}
+[data-testid="stExpander"] details > summary p,
+[data-testid="stExpander"] details > summary span,
+[data-testid="stExpander"] details > summary svg {{color: {palette['text']} !important;}}
+[data-testid="stExpander"] details > summary:focus-visible {{outline: 2px solid {palette['accent']}; outline-offset: -2px;}}
 [role="tab"] {{color: {palette['muted']} !important;}} [role="tab"][aria-selected="true"] {{color: {palette['accent']} !important;}}
 [data-baseweb="input"], [data-baseweb="textarea"], [data-baseweb="select"] > div, [data-testid="stNumberInput"] button, .stButton > button {{background: {palette['surface']} !important; color: {palette['text']} !important; border-color: {palette['border']} !important;}}
 input, textarea {{background: {palette['surface']} !important; color: {palette['text']} !important; -webkit-text-fill-color: {palette['text']} !important;}}
