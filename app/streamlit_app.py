@@ -31,6 +31,9 @@ st.markdown(f"""<style>
 input, textarea {{background: {palette['surface']} !important; color: {palette['text']} !important; -webkit-text-fill-color: {palette['text']} !important;}}
 [data-baseweb="slider"] {{color: {palette['text']} !important;}}
 [data-testid="stToolbar"] button, [data-testid="stHeader"] svg {{color: {palette['muted']} !important;}}
+button[aria-haspopup="listbox"], [role="group"]:has(input[role="combobox"]) {{background: {palette['surface']} !important; color: {palette['text']} !important; border-color: {palette['border']} !important;}}
+button[aria-haspopup="listbox"] svg {{color: {palette['text']} !important;}}
+[data-testid="stDataFrame"] {{filter: {'invert(0.93) hue-rotate(180deg)' if dark_mode else 'none'};}}
 [data-testid="stMarkdownContainer"] a {{color: {palette['accent']};}}
 [data-testid="stTooltipContent"], [data-baseweb="tooltip"], [data-baseweb="popover"] > div, [role="tooltip"], [role="listbox"], [role="menu"], [data-testid="stDialog"] [role="dialog"] {{background: {palette['surface']} !important; color: {palette['text']} !important; border: 1px solid {palette['border']};}}
 [data-testid="stTooltipContent"] *, [data-baseweb="tooltip"] *, [data-baseweb="popover"] *, [role="tooltip"] *, [role="listbox"] *, [role="menu"] * {{color: {palette['text']} !important;}}
@@ -52,9 +55,9 @@ h1 {letter-spacing: -.04em;} h2,h3 {letter-spacing: -.02em;}
 </style>""", unsafe_allow_html=True)
 
 def show_frame(data,**kwargs):
-    # Canvas-backed tables need cell colors as well as the surrounding CSS.
-    styled=data.style.set_properties(**{'background-color':palette['surface'],'color':palette['text']})
-    st.dataframe(styled,**kwargs)
+    # Theme the whole canvas widget in CSS, including headers, index and tools.
+    # Keep its base cells consistent so dark mode does not invert twice.
+    st.dataframe(data,**kwargs)
 
 def show_chart(chart):
     chart=(chart.configure(background=palette['background'])
