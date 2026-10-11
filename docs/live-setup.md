@@ -1,4 +1,4 @@
-# Live data and private deployment
+# Live data and deployment
 
 The app is integrated with Alpaca's **market-data endpoints only**. It cannot
 place orders. An account and server-side API credentials are still required.
@@ -10,7 +10,7 @@ place orders. An account and server-side API credentials are still required.
    chat, source files, screenshots and GitHub commits. Do not change a paid plan
    merely to run the initial IEX example.
 3. Sign in to [Streamlit Community Cloud](https://share.streamlit.io/) with access
-   to the private GitHub repository. No account has been created by this project.
+   to the GitHub repository. No account has been created by this project.
 
 ## Deploy the prepared app
 
@@ -23,7 +23,7 @@ ALPACA_API_KEY = "your-key"
 ALPACA_API_SECRET = "your-secret"
 ```
 
-Verify sharing is restricted before entering personal holdings. Run the
+Choose public or restricted sharing deliberately. Do not enter sensitive personal holdings in a public demo. Run the
 synthetic example first: volatility must be 13.74%, and a $200 contribution with
 60% caps must purchase $200 of B. Then select Alpaca, initially IEX, confirm the
 supported universe and click Retrieve / refresh data. IEX is one-exchange data;
@@ -77,4 +77,4 @@ Sources checked October 9, 2026: [Alpaca history](https://docs.alpaca.markets/us
 [corporate-action availability caveat](https://docs.alpaca.markets/us/reference/corporateactions-1),
 [Streamlit secrets](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/secrets-management).
 SIP entitlement, known live action checks and data-display rights remain
-separate from software test results. Keep development and the app private.
+separate from software test results. Verify provider terms for the intended deployment and audience.

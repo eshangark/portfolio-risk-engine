@@ -7,14 +7,13 @@ The synthetic example requires no credentials. For Alpaca, supply
 `ALPACA_API_KEY` and `ALPACA_API_SECRET` through server environment variables or
 Streamlit secrets. Never commit a secrets file. Select the feed explicitly.
 
-Community Cloud configuration: private repository, branch `main`, entry point
+Community Cloud configuration: repository, branch `main`, entry point
 `app/streamlit_app.py`, Python 3.12. Root `packages.txt` installs the C++ compiler
-and Eigen; `requirements.txt` builds the Python extension. Verify Sharing is
-restricted to specific people. Private hosted C++ operation and IEX history
+and Eigen; `requirements.txt` builds the Python extension. Choose public sharing for a public dashboard, or restrict sharing for a private deployment. Private hosted C++ operation and IEX history
 retrieval were verified on 2026-10-09.
 
 SIP entitlement, dividend/split convention checks, and display permissions are
-still pending. Keep development private.
+still pending. Confirm your provider entitlement and permitted data-display use before sharing market data.
 
 See [live setup](../docs/live-setup.md) for the server secrets template and
 read-only verification commands. Complete-snapshot refresh now reports additions,

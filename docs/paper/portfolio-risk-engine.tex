@@ -1,0 +1,1310 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+\documentclass[
+  american,
+  11pt,
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\newenvironment{Shaded}{}{}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.49,0.56,0.16}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.53,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.56,0.13,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.73,0.13,0.13}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.25,0.63,0.44}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.02,0.16,0.49}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.50,0.00}{\textbf{#1}}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.40,0.40,0.40}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.44,0.13}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.74,0.48,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.73,0.40,0.53}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.10,0.09,0.49}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.25,0.44,0.63}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.38,0.63,0.69}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\ifLuaTeX
+\usepackage[bidi=basic,shorthands=off]{babel}
+\else
+\usepackage[bidi=default,shorthands=off]{babel}
+\fi
+\ifLuaTeX
+  \usepackage{selnolig} % disable illegal ligatures
+\fi
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Portfolio Risk Engine}
+\fancyhead[R]{\small Technical Paper}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+\setlength{\emergencystretch}{3em}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Portfolio Risk{,} Sensitivity{,} and Constrained Allocation},
+  pdfauthor={Eshan Garkhedkar},
+  pdflang={en-US},
+  colorlinks=true,
+  linkcolor={NavyBlue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={NavyBlue},
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Portfolio Risk, Sensitivity, and Constrained Allocation}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Mathematical foundations, C++ implementation, and independent
+validation}
+\author{Eshan Garkhedkar}
+\date{October 9, 2026}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+This project develops an auditable numerical engine for portfolio risk,
+attribution, sensitivity, and contribution-only allocation. We derive
+the mathematical models, implement them in C++ with a scoped
+reverse-mode differentiation tape, and retain independent Python
+reference calculations. The central distinction is between arithmetic
+correctness, optimization correctness, and the empirical adequacy of
+estimated covariance. The paper states the domains of the derivatives,
+formulates the constrained quadratic problem, documents data
+assumptions, and separates measured validation from unperformed
+empirical work. Historical covariance is not treated as a known law of
+future returns. This is a research and educational software project.
+\end{abstract}
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\section{1. Definitions, prerequisites, and risk
+estimation}\label{definitions-prerequisites-and-risk-estimation}
+
+\subsection{Practical question}\label{practical-question}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(i,t\): Asset index and observation time; $t-1$ is the preceding observation.
+\item \(r_{t,i},r_t\): Simple return for asset $i$ at time $t$, and vector of returns at that time.
+\item \(P^*_{t,i}\): Consistently adjusted historical price; the star marks an adjustment label.
+\item \(n,\mathbb R^n\): Number of assets and the space of real vectors with $n$ entries.
+\item \(h_i,V,w_i,w\): Dollar holding, total value, individual portfolio weight, and vector of weights.
+\item \(\mathbf1,T\): All-ones vector, and transpose when used as a superscript.
+\item \(X,Y\): Random variables in the expectation, variance, and covariance definitions.
+\item \(E,\operatorname{Var},\operatorname{Cov}\): Expectation, variance, and covariance operators.
+\item \(\sum,\ge,>\): Summation, greater-than-or-equal comparison, and strict greater-than comparison.
+\end{itemize}
+
+
+How much dispersion does a fixed portfolio have under an estimated
+covariance model, and which assumptions enter that estimate?
+
+For asset \(i\), a simple one-period return is
+\(r_{t,i}=P^*_{t,i}/P^*_{t-1,i}-1\). Here \(P^*\) denotes a positive,
+consistently adjusted historical price series whose economic
+interpretation has been checked. This notation alone does not establish
+that dividends are reinvested. Current holdings require a separate
+unadjusted valuation price.
+
+Let \(r_t\in\mathbb R^n\), \(w\in\mathbb R^n\), \(w_i\ge0\) and
+\(\mathbf1^Tw=1\). Returns and weights are dimensionless. If \(h_i\) are
+dollar holdings, \(V=\sum_i h_i>0\) and \(w_i=h_i/V\). Covariance is in
+squared-return units for a declared period; volatility is in return
+units for the same period.
+
+Expectation is a probability-weighted average. Variance
+\(\operatorname{Var}(X)=E[(X-E[X])^2]\) measures squared deviations
+around it. Covariance \(\operatorname{Cov}(X,Y)=E[(X-E[X])(Y-E[Y])]\)
+measures joint deviations. Correlation divides covariance by the product
+of nonzero standard deviations. A zero-variance variable has no defined
+correlation coefficient under this formula.
+
+\subsection{Portfolio quadratic form}\label{portfolio-quadratic-form}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(r,r_p\): Asset-return vector and resulting portfolio return.
+\item \(w,w_i,w_j\): Weight vector and its entries at asset indices $i,j$.
+\item \(E,\operatorname{Var},\sum_i,\sum_j\): Expectation, variance, and sums across asset indices.
+\item \(a\): Arbitrary real vector used to test nonnegative quadratic variance.
+\item \(T\): Transpose of a vector or matrix; not the observation count in this subsection.
+\item \(Q,\Lambda\): Orthogonal eigenvector matrix and diagonal eigenvalue matrix.
+\item \(\lambda_{max},\lambda_{min}\): Largest and smallest eigenvalues; subscripts indicate extrema.
+\end{itemize}
+
+
+With fixed weights, \(r_p=w^Tr\). Expanding the square gives
+
+\[\operatorname{Var}(r_p)=E\left[\left(\sum_i w_i(r_i-E[r_i])\right)^2\right]
+=\sum_i\sum_jw_iw_j\Sigma_{ij}=w^T\Sigma w.\]
+
+Thus \(\sigma(w)=\sqrt{w^T\Sigma w}\). Covariance is symmetric and
+positive semidefinite (PSD):
+\(a^T\Sigma a=\operatorname{Var}(a^Tr)\ge0\) for every real \(a\). The
+spectral theorem writes \(\Sigma=Q\Lambda Q^T\); PSD means nonnegative
+eigenvalues. Eigenvalues measure variance along orthogonal directions,
+not individual asset risks.
+
+Singularity means some direction has zero variance under this model. For
+positive-definite \(\Sigma\), the spectral condition number is
+\(\lambda_{max}/\lambda_{min}\); a large ratio warns that inversion can
+amplify perturbations. Risk evaluation needs matrix multiplication, not
+inversion. Singularity is therefore valid and must not be rejected
+simply because a Cholesky factorization fails. See
+\href{https://docs.mosek.com/portfolio-cookbook/markowitz.html}{MOSEK's
+portfolio formulation}.
+
+\subsection{Sample estimator and
+normalization}\label{sample-estimator-and-normalization}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(T,n,t\): Number of return observations, number of assets, and observation index.
+\item \(r_t,\bar r\): Return vector at observation $t$ and its sample mean.
+\item \(X\): Centered return matrix, with observations as rows and assets as columns.
+\item \(S\): Sample covariance matrix using the $T-1$ denominator.
+\item \(a\): Arbitrary test vector for the quadratic form.
+\item \({}^T,\|\cdot\|,\operatorname{rank},\min\): Transpose, Euclidean norm, matrix rank, and minimum operator.
+\item \(\mathbb R^{T\times n},\sum_t\): Real matrices with $T$ rows and $n$ columns, and sum over observations.
+\end{itemize}
+
+
+For \(T\ge2\) aligned return rows, \(\bar r=T^{-1}\sum_t r_t\) and
+centered matrix \(X\in\mathbb R^{T\times n}\):
+
+\[S=\frac{1}{T-1}X^TX.\]
+
+This uses the sample normalization; under independent identically
+distributed rows with finite covariance it is unbiased. Rows of market
+data need not meet those assumptions. Since \(a^TSa=\|Xa\|^2/(T-1)\),
+this construction preserves PSD. Centering implies
+\(\operatorname{rank}(S)\le\min(n,T-1)\). Pairwise deletion with
+different date sets need not preserve PSD; the product must use a common
+set of complete daily returns.
+
+Example with three return rows \((.01,.02),(-.01,0),(0,-.02)\) has zero
+mean and
+
+\[S=\begin{pmatrix}.0001&.0001\\.0001&.0004\end{pmatrix}.\]
+
+The reference independently matches this result and NumPy's
+\texttt{cov(...,\ ddof=1)}.
+
+\subsection{Shrinkage and its precise
+status}\label{shrinkage-and-its-precise-status}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(S,S_{ML},S_\alpha\): Sample covariance, empirical covariance using denominator $T$, and shrunk covariance.
+\item \(\alpha,\hat\alpha\): Chosen shrinkage coefficient and fitted shrinkage coefficient; a hat marks estimation.
+\item \(\mu,n,I\): Mean diagonal variance, asset count, and identity matrix.
+\item \(\operatorname{tr},\lambda_i\): Sum of diagonal entries and eigenvalue indexed by $i$.
+\item \(X,T,{}^T\): Centered return matrix, observation count, and transpose.
+\end{itemize}
+
+
+For a PSD estimate \(S\), define \(\mu=\operatorname{tr}(S)/n\) and
+
+\[S_\alpha=(1-\alpha)S+\alpha\mu I,\qquad 0\le\alpha\le1.\]
+
+It is PSD as a convex combination of PSD matrices. If \(\alpha>0\) and
+\(\mu>0\), all eigenvalues \((1-\alpha)\lambda_i+\alpha\mu\) are
+positive. This improves conditioning but introduces a structured bias
+toward equal variances and zero covariance; it is not a guarantee of
+better future allocation.
+
+The engine implements a fixed-\(\alpha\) sensitivity path. Separately,
+Python fits the Ledoit--Wolf scaled-identity estimator through
+scikit-learn and records the estimated coefficient. Its covariance-loss
+criterion is not realized portfolio returns. See the
+\href{https://www.sciencedirect.com/science/article/pii/S0047259X03000964}{original
+paper} and
+\href{https://scikit-learn.org/stable/modules/generated/sklearn.covariance.LedoitWolf.html}{estimator
+documentation}.
+
+The fitted estimator uses the centered empirical covariance
+\(S_{ML}=X^TX/T\), while the sample option uses \(S=X^TX/(T-1)\). Tests
+reconstruct the fitted result as
+\((1-\hat\alpha)S_{ML}+\hat\alpha\operatorname{tr}(S_{ML})I/n\). Both
+outputs are multiplied by the declared annualization factor. Thus
+estimator comparisons include a normalization difference as well as
+shrinkage. A fixed arbitrary coefficient is never labeled a fitted
+Ledoit--Wolf estimate.
+
+\subsection{Annualization and
+interpretation}\label{annualization-and-interpretation}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(K,d\): Number of additive periods and a subscript identifying daily quantities.
+\end{itemize}
+
+
+For an additive \(K\)-period return sum, covariance equals \(K\Sigma_d\)
+only if cross-period covariance terms vanish and period covariances are
+identical. With serial dependence the omitted cross terms matter. Annual
+volatility \(\sqrt{252}\sigma_d\) is a convention under these
+assumptions, not the exact variance of compounded annual simple returns.
+Display both period and multiplier. The example in chapter 2 is already
+annual and must not be annualized again.
+
+This is a constant-weight risk estimate. A buy-and-hold historical
+account has drifting weights; reproducing that path requires holdings
+evolution. Historical covariance estimates future risk only through a
+modeling assumption of relevant history. The interface compares windows
+of 63, 126 and 252 completed common daily returns when available. It
+labels their spread sensitivity rather than calibrated uncertainty.
+
+Implementation:
+\href{https://github.com/eshangark/portfolio-risk-engine/blob/main/src/portfolio_risk/reference.py}{reference.py}
+and
+\href{https://github.com/eshangark/portfolio-risk-engine/blob/main/src/portfolio_risk/estimation.py}{estimation.py}.
+Validation includes hand values, scaling, permutation, PSD rejection,
+singular cases and estimator normalization. Exchange-calendar processing
+is implemented and tested with synthetic dates; empirical estimation
+quality remains unverified.
+
+\section{2. Differentiation and a worked
+example}\label{differentiation-and-a-worked-example}
+
+\subsection{From calculus to
+decisions}\label{from-calculus-to-decisions}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(w,v(w)\): Weight vector and variance evaluated at those weights.
+\item \(\delta\): Small vector perturbation to the weights.
+\item \(g,\nabla,\nabla_w\): Volatility gradient, gradient operator, and differentiation with respect to weights.
+\item \(d,\mathbf1\): Feasible transfer direction and all-ones vector.
+\item \(e_A,e_B\): Unit vectors selecting assets A and B.
+\item \(\epsilon,g_A,g_B\): Small transfer size and gradient entries for assets A and B.
+\item \({}^T,O(\epsilon^2)\): Transpose and an error whose magnitude is bounded by a constant times the squared transfer size near zero.
+\end{itemize}
+
+
+For a fixed symmetric \(\Sigma\), expand
+\((w+\delta)^T\Sigma(w+\delta)\) to obtain
+
+\[v(w+\delta)=v(w)+2\delta^T\Sigma w+\delta^T\Sigma\delta.\]
+
+Therefore \(\nabla v=2\Sigma w\). Applying the scalar chain rule to
+\(\sqrt v\) yields
+
+\[g=\nabla_w\sigma=\frac{\Sigma w}{\sigma},\qquad \sigma>0.\]
+
+The derivative is with respect to unconstrained coordinates even though
+valid portfolios lie on a simplex. A feasible first-order direction
+\(d\) must satisfy \(\mathbf1^Td=0\) and remain inside nonnegativity
+bounds. A transfer from A to B has \(d=e_B-e_A\), so
+
+\[\sigma(w+\epsilon d)-\sigma(w)=\epsilon(g_B-g_A)+O(\epsilon^2).\]
+
+At a boundary a feasible direction may allow only one sign of
+\(\epsilon\). Do not confuse this derivative with increasing B while
+holding all other weights fixed.
+
+\subsection{Risk attribution}\label{risk-attribution}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(w,w_i,g\): Weight vector, asset-$i$ weight, and volatility-gradient vector.
+\item \(RC_i,i,\sum_i\): Asset-$i$ volatility contribution, asset index, and sum across assets.
+\item \({}^T,(\cdot)_i\): Transpose and extraction of vector entry $i$.
+\end{itemize}
+
+
+Volatility is homogeneous of degree one for positive scalings. Euler's
+identity gives \(w^Tg=\sigma\); directly,
+
+\[\sum_i RC_i=\sum_i w_i\frac{(\Sigma w)_i}{\sigma}
+=\frac{w^T\Sigma w}{\sigma}=\sigma.\]
+
+\(RC_i\) has the same units as volatility. Capital share \(w_i\) and
+risk share \(RC_i/\sigma\) answer different questions. Contributions can
+be negative, even in a long-only portfolio, if covariance gives a
+sufficiently strong hedge; they are an attribution, not independent
+stand-alone risks. The attribution framework is described in
+\href{https://docs.mosek.com/portfolio-cookbook/risk_parity.html}{MOSEK's
+risk budgeting chapter}.
+
+\subsection{New cash changes the
+denominator}\label{new-cash-changes-the-denominator}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(h,h_i,H,V\): Dollar holdings vector, holding of asset $i$, and two labels for existing total wealth.
+\item \(w,w_i,g,g_j\): Weight vector, weight $i$, volatility-gradient vector, and gradient entry $j$.
+\item \(i,j,\delta_{ij}\): Asset indices and Kronecker delta: one for equal indices, zero otherwise.
+\item \(\partial,\nabla_h,{}^T,\sum_i\): Partial derivative, gradient with respect to holdings, transpose, and sum over assets.
+\item \(b,B,x\): Transfer amount, new contribution budget, and purchase-dollar vector.
+\item \(g_A,g_B\): Gradient entries for the two assets used in the transfer example.
+\end{itemize}
+
+
+For dollar holdings \(h\), \(H=\sum_i h_i>0\), and \(w=h/H\):
+
+\[\frac{\partial w_i}{\partial h_j}=\frac{\delta_{ij}-w_i}{H},\qquad
+\frac{\partial\sigma}{\partial h_j}=\frac{g_j-w^Tg}{H}=\frac{g_j-\sigma}{H}.\]
+
+The units are volatility per dollar. This derivative includes the effect
+on all weights. Adding dollars proportionally to every existing holding
+leaves weights unchanged: \(h^T\nabla_h\sigma=0\). A transfer of \(b\)
+dollars keeps total wealth constant and instead has derivative
+\(b(g_B-g_A)/H\).
+
+For a fixed contribution \(B\) fully distributed through purchases
+\(x\), the feasible total is constant: \(w(x)=(h+x)/(V+B)\). Its
+objective gradient in purchase coordinates is \(2\Sigma(h+x)/(V+B)^2\).
+Off the budget constraint, that fixed-denominator extension is a
+computational definition, not the normalization for arbitrary additional
+wealth. Both give the same directional derivative along feasible
+transfers of purchases.
+
+\subsection{Hand-worked example}\label{hand-worked-example}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(w,v,g,RC,h\): Weights, portfolio variance, volatility gradient, risk-contribution vector, and dollar holdings.
+\item \(A,B\): Labels for the first and second assets in this example; B here is not a contribution budget.
+\end{itemize}
+
+
+Take \(w=(.6,.4)\) and annual
+\(\Sigma=\begin{pmatrix}.04&.006\\.006&.01\end{pmatrix}\). The asset
+volatilities are .2 and .1; the implied correlation is
+\(.006/(.2\cdot.1)=.3\).
+
+\[\Sigma w=(.0264,.0076),\quad
+v=.6^2(.04)+2(.6)(.4)(.006)+.4^2(.01)=.01888.\]
+
+Thus \(\sigma=0.1374045123\), \(g=(.1921334282,.0553111384)\), and
+\(RC=(.1152800569,.0221244554)\). A accounts for 83.8983\% of total
+volatility attribution despite holding 60\% of capital.
+
+A transfer of one percentage point of portfolio weight from A to B has
+linear change \(-.0013682229\) and exact change \(-.0013611369\) in
+volatility units. Multiply by 100 to express volatility percentage
+points: approximately \(-.13682\) versus \(-.13611\).
+
+Start with \(h=(600,400)\) dollars and buy \(100\) of B using new cash.
+Weights become \((600/1100,500/1100)\). Exact volatility change is
+\(-.0072425026\) versus the local dollar approximation \(-.0082093374\).
+A 10\% wealth increase is large enough that the approximation error is
+visible. The conclusion concerns percentage-return volatility; dollar
+risk can increase when invested wealth grows.
+
+\subsection{Sensitivity to a valid covariance
+path}\label{sensitivity-to-a-valid-covariance-path}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(S,F,S_\alpha\): Base covariance, target covariance, and covariance along the shrinkage path.
+\item \(\mu,I,\alpha\): Mean diagonal variance, identity matrix, and shrinkage coefficient.
+\item \(w,{}^T,\partial/\partial\alpha\): Weight vector, transpose, and partial differentiation with respect to shrinkage.
+\end{itemize}
+
+
+Keep base \(S\), target \(F=\mu I\), and weights fixed. On
+\(S_\alpha=(1-\alpha)S+\alpha F\):
+
+\[\frac{\partial\sigma}{\partial\alpha}=\frac{w^T(F-S)w}{2\sigma}.\]
+
+Only \(\alpha\in[0,1]\) is admitted. At endpoints use admissible
+one-sided perturbations for checks. This derivative does not
+differentiate the estimated Ledoit--Wolf coefficient with respect to
+data. Changing a single correlation arbitrarily can destroy PSD; use
+model-valid paths instead.
+
+\subsection{Implemented custom reverse
+mode}\label{implemented-custom-reverse-mode}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(u,v,z\): Two scalar inputs and their product in the tape example; $v$ here is not portfolio variance.
+\item \(\bar u,\bar v,\bar z\): Adjoints: derivatives of the final output with respect to these intermediate values.
+\item \(\mathrel{+}=\): Accumulate into an existing adjoint rather than overwrite it.
+\item \(x,q,f,df/dx\): Scalar input, squared intermediate, final output, and derivative of the output with respect to the input.
+\item \(m,n,O(\cdot)\): Operation count, asset count, and asymptotic upper-bound notation for computation or storage.
+\end{itemize}
+
+
+The C++ tape stores immutable node values and parent edges with local
+derivatives. Each reverse pass allocates fresh zero adjoints,
+initializes the output adjoint to one, and traverses backward to add
+chain-rule contributions. For \(z=u v\), accumulate
+\(\bar u\mathrel{+}=\bar z v\) and \(\bar v\mathrel{+}=\bar z u\).
+Addition, subtraction, multiplication, division and square root are
+implemented. If \(u=v\), both edge contributions accumulate. For
+example, \(q=x^2\) and \(f=q+q\) produce \(df/dx=4x\), including the
+shared intermediate correctly.
+
+A tape owns node storage. Handles retain shared ownership and carry a
+generation number to reject cross-tape mixing and use after reset.
+Graphs are rebuilt per calculation, including every optimizer gradient
+evaluation; stored local derivatives are never reused with changed
+inputs. Division by zero, square root at nonpositive values and
+nonfinite arithmetic fail explicitly. The risk wrapper returns zero
+volatility with its usual gradient unavailable, even when a special
+constant-zero model admits a derivative. With \(m\) operations and
+bounded parents per node, forward evaluation and one reverse pass
+require \(O(m)\) work and storage. The dense quadratic graph has
+\(O(n^2)\) operations; no speed advantage over the closed form is
+asserted.
+
+AD evaluates derivatives of the implemented arithmetic graph up to
+floating-point effects; it does not cure statistical model error. The
+closed-form volatility gradient is simple and remains an independent
+oracle. AD supplies implementation depth and handles composed
+normalization and parameter paths. See
+\href{https://jmlr.org/papers/volume18/17-468/17-468.pdf}{Baydin et al.,
+section 3}.
+
+Independent formulas remain in
+\href{https://github.com/eshangark/portfolio-risk-engine/blob/main/src/portfolio_risk/reference.py}{reference.py}.
+The C++ engine evaluates risk, normalized-dollar sensitivities and
+fixed-shrinkage sensitivities through the tape. Python tests compare
+these against analytical formulas and finite differences; native tests
+also exercise handle lifetime, reset and shared nodes under address and
+undefined-behavior sanitizers.
+
+\section{3. Constrained allocation}\label{constrained-allocation}
+
+\subsection{Practical question and
+domain}\label{practical-question-and-domain}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(h,V,B,D\): Existing dollar holdings, existing wealth, contribution budget, and final total wealth.
+\item \(x,x_i,c_i,u_i\): Purchase vector, purchase for asset $i$, final-weight cap, and dollar purchase capacity.
+\item \(n,i,\mathbf1,\mathbb R^n\): Asset count, asset index, all-ones vector, and real-vector space.
+\item \(f,\min_x\): Portfolio variance objective and minimization over purchases.
+\item \({}^T,\nabla,\nabla^2,\succeq0\): Transpose, gradient, Hessian (second-derivative matrix), and positive-semidefinite ordering.
+\end{itemize}
+
+
+Given nonnegative dollar holdings \(h\in\mathbb R^n\), wealth
+\(V=\mathbf1^Th\), contribution \(B\ge0\), and \(D=V+B>0\), distribute
+purchases \(x\) without selling. Assume a fixed PSD covariance,
+continuous dollar amounts, full investment of \(B\) and optional
+post-contribution caps \(c_i\in[0,1]\).
+
+\[\min_x f(x)=\frac{(h+x)^T\Sigma(h+x)}{D^2},\qquad
+\mathbf1^Tx=B,\quad 0\le x_i\le u_i=c_iD-h_i.\]
+
+The objective has squared-return units; \(x\) and \(u\) are dollars. The
+gradient has squared-return units per dollar:
+
+\[\nabla f(x)=\frac{2\Sigma(h+x)}{D^2},\qquad
+\nabla^2 f=\frac{2\Sigma}{D^2}\succeq0.\]
+
+PSD curvature proves convexity: along every line the second derivative
+is nonnegative. The box intersected with the budget hyperplane is convex
+and compact when feasible. A continuous objective has a minimizer there.
+Strict positivity of curvature on nonzero feasible directions ensures
+uniqueness; singular covariance can instead produce many optimal
+allocations. Weight agreement is consequently an inadequate solver
+check.
+
+\subsection{Feasibility before
+optimization}\label{feasibility-before-optimization}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(h,h_i,V,B,c,c_i,u,u_i\): Holdings vector and entry, existing wealth, budget, cap vector and entry, and purchase-capacity vector and entry.
+\item \(i,\sum_i,\le,\ge\): Asset index, sum across assets, less-than-or-equal, and greater-than-or-equal comparisons.
+\end{itemize}
+
+
+With upper bounds only, feasibility is equivalent to \(u_i\ge0\) for all
+\(i\) and \(\sum_i u_i\ge B\). Necessity follows by summing upper
+bounds; sufficiency follows by filling nonnegative capacities until
+\(B\) is used. An existing overweight asset may become permissible after
+dilution by the contribution. Evaluate \(h_i\le c_i(V+B)\), not
+\(h_i/V\le c_i\).
+
+For \(h=(600,400)\), \(B=200\), and \(c=(.6,.6)\), \(u=(120,320)\) and
+the budget is feasible. Tightening the first cap to .4 makes its
+capacity \(-120\), so no purchase-only solution exists. The reference
+implements these checks in
+\href{https://github.com/eshangark/portfolio-risk-engine/blob/main/src/portfolio_risk/reference.py}{\texttt{purchase\_bounds}};
+the implemented solver's residual tolerances are specified below.
+
+\subsection{Algorithm and projection}\label{algorithm-and-projection}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(x,x^k,x^{k+1},x_i\): Purchase vector, current iterate, next iterate, and purchase for asset $i$; $k$ counts updates.
+\item \(C,\Pi_C\): Feasible set and Euclidean projection onto that set.
+\item \(u,B,h,c,D,\mathbf1\): Purchase capacities, budget, existing holdings, caps, final wealth, and all-ones vector.
+\item \(\eta,L,\lambda_{max}\): Step size, gradient Lipschitz bound, and largest eigenvalue.
+\item \(f,\nabla f,z,\tau\): Variance objective, its gradient, trial point, and scalar projection threshold.
+\item \(\min,\max,\sum_i,\|\cdot\|,{}^T\): Minimum, maximum, sum across assets, Euclidean norm, and transpose.
+\item \(\ell,y,b,a,C_y\): Existing holdings divided by final wealth, purchase fractions, budget fraction, capacity fractions, and their feasible set.
+\item \(s,Q,F\): Largest covariance eigenvalue, covariance divided by that eigenvalue, and scaled variance objective.
+\item \(p,z_p,n\): Pivot asset index, pivot score, and asset count in the extreme-range projection argument.
+\item \(d,y^0,y^*,\nabla F\): Iterate displacement, initial purchase fractions, optimal purchase fractions, and scaled-objective gradient; star marks an optimum.
+\end{itemize}
+
+
+Projected gradient is scoped, transparent, and independently testable.
+Start from a feasible point and iterate
+
+\[x^{k+1}=\Pi_C(x^k-\eta\nabla f(x^k)),\quad
+C=\{x:0\le x\le u,\;\mathbf1^Tx=B\}.\]
+
+For \(L=2\lambda_{max}(\Sigma)/D^2>0\), use \(0<\eta\le1/L\) as an
+initial fixed-step design. If \(L=0\), every feasible point is optimal
+and no reciprocal step is formed. Projected gradient is the
+proximal-gradient method with an indicator of the feasible set; see
+\href{https://web.stanford.edu/~boyd/papers/pdf/prox_algs.pdf}{Parikh
+and Boyd, section 4.2}.
+
+To project a trial point \(z\), minimize \(\frac12\|x-z\|^2\) over
+\(C\). Stationarity with an equality multiplier \(\tau\) and box
+clipping yields
+
+\[x_i(\tau)=\min\{u_i,\max\{0,z_i-\tau\}\},\quad
+\sum_i x_i(\tau)=B.\]
+
+The sum is continuous and nonincreasing. For \(0<B<\sum_i u_i\), bracket
+\(\tau\) between \(\min_i(z_i-u_i)\) and \(\max_i z_i\), then bisect
+until the budget residual meets a documented scale-aware tolerance. The
+projected point is unique, though the multiplier need not be. Handle
+\(B=0\) and \(B=\sum_i u_i\) directly. Validate projection feasibility,
+idempotence, and the variational inequality
+\((z-\Pi_Cz)^T(y-\Pi_Cz)\le0\) for feasible \(y\).
+
+The implemented coordinates are \(\ell=h/D\), \(y=x/D\), \(b=B/D\) and
+\(a=c-\ell\). Thus \(w=\ell+y\), with feasible set
+\(C_y=\{y:0\le y\le a,\ \mathbf1^Ty=b\}\).
+This avoids dollar-scale conditioning and remains defined when \(B=0\).
+For \(s=\lambda_{max}(\Sigma)>0\), define \(Q=\Sigma/s\) and
+\(F(y)=(\ell+y)^TQ(\ell+y)\). The gradient \(2Q(\ell+y)\) has Lipschitz
+constant 2, so the code takes step \(\eta=1/2\). Each projection uses
+rescaled bisection for 160 iterations and a final budget-residual
+correction inside the box. The baseline projects equal purchase
+fractions onto the feasible set. Zero contribution or zero covariance
+has an immediate feasible optimum.
+
+An extreme-range audit exposed a weakness in scaling by the full score
+range: a difference of order $10^{300}$ can erase a unit budget. The
+implementation now first replaces each upper bound by $\min(u_i,B)$,
+which leaves the feasible set unchanged. Sort scores in descending order
+and choose pivot $p$ where their cumulative capped capacity first reaches
+$B$. At threshold $z_p$, purchased capacity is below $B$; at threshold
+$z_p-nB$, every asset at or above the pivot is saturated, giving capacity
+at least $B$. Hence a valid threshold lies in $[z_p-nB,z_p]$.
+After shifting by $z_p$ and scaling by $B$, clip scores to $[-n,n]$:
+clipped extremes must be zero or saturated throughout this threshold
+interval. Bisection therefore retains the budget geometry independently
+of the original score range. This argument concerns exact arithmetic;
+finite-precision residual correction and explicit diagnostics remain necessary.
+
+To see why this step descends, let \(d=y^{k+1}-y^k\). Projection
+optimality gives \(\nabla F(y^k)^Td\le-\|d\|^2/\eta\). The
+Lipschitz-gradient bound then gives
+\(F(y^{k+1})\le F(y^k)-(1/\eta-L/2)\|d\|^2\). For \(L=2\) and
+\(\eta=1/2\), the coefficient is one. In exact arithmetic, convex
+projected gradient also satisfies
+\(F(y^k)-F(y^*)\le\|y^0-y^*\|^2/(2\eta k)\) for \(k\ge1\). This is an
+objective bound, not a guarantee of unique weights. Floating-point
+projection error and a finite iteration limit make explicit diagnostics
+necessary.
+
+\subsection{Optimality and independent
+validation}\label{optimality-and-independent-validation}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(f,x,u,\mathbf1\): Dollar-coordinate variance objective, purchase vector, capacities, and all-ones vector.
+\item \(\nu,\lambda,\gamma\): Budget-equality multiplier, nonnegative lower-bound multipliers, and nonnegative upper-bound multipliers.
+\item \(\lambda_i,\gamma_i,i\): Individual constraint multipliers and asset index; $\lambda$ here denotes multipliers, not covariance eigenvalues.
+\item \(\eta,G_\eta,\Pi_C,\nabla f\): Step size, projected-gradient mapping, feasible-set projection, and objective gradient.
+\item \(y,C_y,F,s,\|\cdot\|_2\): Purchase fractions, their feasible set, scaled variance objective, covariance scale, and Euclidean norm.
+\end{itemize}
+
+
+For the original dollar problem, KKT stationarity is
+
+\[\nabla f+\nu\mathbf1-\lambda+\gamma=0,\]
+
+with unrestricted \(\nu\), nonnegative \(\lambda,\gamma\), feasibility, \(\lambda_ix_i=0\) and
+\(\gamma_i(x_i-u_i)=0\). For this convex quadratic on a polyhedron, an
+appropriate first-order variational inequality characterizes global
+optima. A convenient numerical diagnostic is
+
+\[G_\eta(x)=\frac{x-\Pi_C(x-\eta\nabla f(x))}{\eta}.\]
+
+It vanishes exactly at a constrained optimum. The implementation stops
+when the scaled mapping norm \(2\|y-\Pi_{C_y}(y-\nabla F(y)/2)\|_2\) is at
+most \(10^{-9}\) by default, or after 10,000 updates. This absolute,
+dimensionless threshold is adjustable. Multiplying this norm by \(s\)
+gives the mapping norm in weight coordinates for the unscaled variance
+objective with step \(1/(2s)\); it is not a dollar-coordinate norm. The
+output also reports dollar budget residual, maximum weight-bound
+violation, iteration count, stopping reason, objective and improvement
+over the feasible baseline. Constraint feasibility admits only
+\(10^{-12}\) weight-scale roundoff before projection. Independent tests
+compare full-rank and rank-deficient objectives with OSQP, emphasizing
+objective agreement instead of unique weight agreement.
+
+The C++ solver obtains the composed objective gradient through the tape
+by default; an analytical-gradient mode is also checked. Covariance
+stays fixed within each solve. The interface repeats solves across
+predeclared windows and covariance estimators when enough observations
+exist. Synthetic convergence and solver-agreement evidence is reported
+in chapter 5; real-market allocation stability remains unmeasured.
+
+Minimum estimated variance ignores expected return, investor objectives,
+tax, fees, execution and estimation error. It answers this explicit
+constrained mathematical question; it does not define the best personal
+investment portfolio.
+
+\section{4. Architecture and data
+methodology}\label{architecture-and-data-methodology}
+
+\subsection{Implemented separation of
+responsibilities}\label{implemented-separation-of-responsibilities}
+
+The dependency chain is provider adapter, validated returns, Python
+covariance estimation, C++ risk/AD/optimization, then Streamlit
+presentation. The C++17 engine accepts arrays and explicit parameters
+without network or dashboard dependencies. CMake and scikit-build-core
+package a \href{https://pybind11.readthedocs.io/en/stable/}{pybind11}
+extension. Eigen supplies dense arithmetic and symmetric
+eigendecomposition. The independent NumPy reference remains separate.
+
+Bindings validate numerical inputs in the core and translate exceptions.
+Returned arrays own their Python-visible storage. The allocator releases
+the Python interpreter lock while computing. Result metadata includes
+engine version, estimation method, normalization, window, annualization,
+dataset hash and diagnostics. These fields describe reproducibility
+inputs, not immutable historical data.
+
+\subsection{Provider adapter and
+limits}\label{provider-adapter-and-limits}
+
+The Alpaca adapter loads credentials server-side from environment
+variables or Streamlit secrets. Only market-data endpoints are called.
+Historical requests explicitly select IEX or SIP and adjustment mode
+\texttt{all}; pagination follows page tokens, rejecting repeated tokens
+and excessive pagination. Authentication and malformed responses fail
+clearly. Transport errors, HTTP 429 and server failures receive at most
+four attempts with bounded waits. There is no silent feed fallback.
+\href{https://docs.alpaca.markets/us/docs/about-market-data-api}{Alpaca's
+access documentation} distinguishes coverage and subscription
+requirements.
+
+The adapter has a bounded, 15-minute in-memory history cache, isolated
+per dashboard session and credential identity. Cache keys include symbols,
+range, feed and adjustment mode. Requests end at least 15 minutes before
+analysis time rather than in the future. On expiry or manual refresh the
+entire adjusted window is fetched, and snapshots are compared for added,
+removed and revised observations, including older dates. Returned histories
+are defensive copies. This audits incremental changes without mixing
+adjustment vintages; it does not reduce network volume. An overlap-only
+refresh cannot guarantee detection of arbitrary revisions outside its overlap.
+
+\href{https://docs.alpaca.markets/us/reference/stockbars}{Historical
+bars documentation} lists adjustment choices, but an option name alone
+does not establish dividend reinvestment economics. Known split/dividend
+cases, account entitlement and display/redistribution permissions remain
+unverified. Checked-in fixtures are synthetic. Mocked HTTP tests
+establish software behavior, not successful live access. For an independently
+specified corporate event, the audit helper compares the adjusted-price return
+with the holder's wealth return
+\[
+r_{\mathrm{event}}=\frac{kP_{\mathrm{after}}+d}{P_{\mathrm{before}}}-1,
+\]
+where \(k\) is new shares per old share and \(d\) is cash per old share.
+\begin{itemize}
+\item \(r_{\mathrm{event}}\): Holder wealth return across the event; event is a label.
+\item \(k,d\): New shares per old share, and cash distribution per old share.
+\item \(P_{\mathrm{before}},P_{\mathrm{after}}\): Share prices before and after the event.
+\end{itemize}
+
+A two-for-one split from 100 to 50 gives zero wealth return. A cash dividend
+of one with prices 100 and 99 also gives zero. Backward price adjustment
+is not generally identical to cash-wealth arithmetic when the ex-date price
+also changes for other reasons. Tests intentionally detect that discrepancy;
+the helper cannot certify a provider convention without checked live events.
+
+\subsection{Calendar and observation
+policy}\label{calendar-and-observation-policy}
+
+Only XNYS sessions whose close plus a 15-minute publication allowance
+precedes the analysis time enter daily-return preparation. Explicit UTC
+timestamps are converted to New York session dates. Prices must be
+positive and finite; duplicate observations fail. Missing history at the
+latest completed session fails. The selected universe is USD US stocks
+and unleveraged ETFs; user confirmation is required, while automated
+asset eligibility validation remains pending.
+
+Prices are reindexed to the expected calendar before returns are
+computed. Each return requires prices on adjacent expected sessions, so
+a missing Monday cannot turn Friday-to-Tuesday movement into a daily
+return. Only then are common complete return rows retained. Effective
+row counts, excluded dates and a SHA-256 identity of the prepared
+returns are recorded. No forward-filling occurs. Tests cover gaps,
+weekends, incomplete sessions, pagination, retries, staleness and
+estimator normalization.
+
+Current shares use separately retrieved, unadjusted latest trades. A
+price older than 15 minutes during an open session, or older than 15
+minutes before the last completed close while closed, is flagged stale.
+Prices more than 30 seconds into the future and nonpositive prices are rejected. Stale share valuation stops
+the interface. A last trade is an observation, not an executable quote;
+this threshold is an explicit policy, not a provider guarantee. Dollar
+and hypothetical-weight inputs do not need the valuation request.
+
+\subsection{Interface and deployment
+boundary}\label{interface-and-deployment-boundary}
+
+The Streamlit app supports a credential-free synthetic example,
+attribution, exact versus local purchase effects, contribution
+allocation and diagnostics. Market mode adds dollar/share/weight input,
+feed selection and comparisons over sample and Ledoit--Wolf estimates at
+63, 126 and 252 observations when available. Zero-volatility gradients
+and infeasible caps are explained explicitly.
+
+On 9 October 2026, the private Streamlit deployment successfully imported
+and ran the C++ engine. Its synthetic workflow reproduced 13.74\% volatility
+and the 200-dollar purchase of B. Authenticated IEX retrieval returned 379
+common completed daily observations for SPY/BND without dropped return dates.
+The hypothetical holdings of 600/400 dollars gave 8.4781\% estimated annual
+volatility using 252 observations; allocation of a 200-dollar contribution
+gave 7.4276\%. All six window/estimator comparisons converged. The Share
+dialog showed the public-access option unchecked. These are hosted integration
+checks at source revision \texttt{15ccd273}, separate from Ubuntu tests.
+Credentials stayed in server secrets; no brokerage execution was performed.
+
+\section{5. Numerical verification and
+reproducibility}\label{numerical-verification-and-reproducibility}
+
+\subsection{Evidence and reproduction}\label{evidence-and-reproduction}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(w,w^*,v\): Feasible allocation, optimal allocation, and linear-oracle minimizing allocation; $v$ here is a vector, not variance.
+\item \(f,\nabla f,{}^T\): Convex allocation objective, its gradient, and transpose.
+\end{itemize}
+
+
+At revision \texttt{fb1d449b},
+\href{https://github.com/eshangark/portfolio-risk-engine/actions/runs/38088543928}{run 38088543928}
+passed all 44 tests on Python 3.10 and 3.12, native sanitizers and all report
+commands. The added audit checks 48 randomized risk instances, 48 allocation
+solves against OSQP and an independent linear-oracle convex certificate,
+covariance/dollar scales from $10^{-200}$ to $10^{200}$, extreme score differences,
+negative risk contributions and nullspace portfolios. It also checks exact
+historical-prefix invariance and independently known cash-flow ledgers.
+For a feasible $w$ and a linear-oracle minimizer $v$ of $\nabla f(w)^Tv$,
+convexity yields
+\[0\le f(w)-f(w^*)\le \nabla f(w)^T(w-v).\]
+The oracle fills the available capacity in increasing gradient order; it
+does not reuse the projection routine. These bounded tests support the
+implemented behavior, not a proof of reliability for every floating-point input.
+
+Install a C++17 compiler, CMake and Eigen3, then run from the repository
+root:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ExtensionTok{python} \AttributeTok{{-}m}\NormalTok{ pip install }\StringTok{\textquotesingle{}.[test,app]\textquotesingle{}}
+\ExtensionTok{python} \AttributeTok{{-}m}\NormalTok{ unittest discover }\AttributeTok{{-}s}\NormalTok{ tests }\AttributeTok{{-}v}
+\ExtensionTok{python} \AttributeTok{{-}m}\NormalTok{ examples.two\_asset }\AttributeTok{{-}{-}output}\NormalTok{ work/two{-}asset.json}
+\ExtensionTok{python} \AttributeTok{{-}m}\NormalTok{ examples.engine\_report }\AttributeTok{{-}{-}output}\NormalTok{ work/engine{-}report.json}
+\end{Highlighting}
+\end{Shaded}
+
+The
+\href{https://github.com/eshangark/portfolio-risk-engine/blob/main/examples/engine_report.py}{C++
+report script} records synthetic data identity, source hashes, runtime
+environment, derivative errors and allocation diagnostics. The Python
+3.12.15 / NumPy 2.5.3 run measured maximum weight-gradient error
+\(2.78\cdot10^{-17}\) and dollar-gradient error \(4.07\cdot10^{-20}\)
+against the independent reference. The worked allocation had zero
+reported budget, bound and projected-gradient residuals. These values
+describe this fixture, not worst-case error bounds. Each Python job also
+stores JSON artifacts. Source hashes identify the evaluated code; later
+documentation edits do not change the historical record.
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Test family
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Independent evidence
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Risk and attribution & Hand variance .01888; NumPy formula; Euler
+identity \\
+Gradients & Analytical, AD and central-difference comparisons \\
+Dollar normalization & Recomputed holdings and feasible transfer
+derivatives \\
+Tape semantics & Shared nodes, repeated passes, lifetime, reset and
+domains \\
+Projection & Budget and bounds, idempotence, variational inequality \\
+Allocation & OSQP objectives for full-rank and singular matrices \\
+Degenerate cases & Zero budget/covariance, iteration limit, infeasible
+caps \\
+Covariance & PSD validation, rank deficiency, scaling and permutation \\
+Estimation & Hand covariance and reconstructed fitted shrinkage \\
+Data & Mock pagination/retries, calendar gaps, staleness and caching \\
+Interface & Synthetic display, infeasible caps, universe confirmation \\
+\end{longtable}
+}
+
+Native tests additionally run with AddressSanitizer and
+UndefinedBehaviorSanitizer. Passing this finite set provides evidence
+for covered cases, not a proof of memory safety for every input. Tests
+use synthetic inputs without provider credentials.
+
+\subsection{Tolerances and
+interpretation}\label{tolerances-and-interpretation}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(n,\epsilon_{mach},S_{ij}\): Asset count, machine epsilon, and covariance entry at row $i$, column $j$.
+\item \(h,O(h^2),O(\epsilon_{mach}/h)\): Finite-difference step (not holdings here), truncation-error order, and cancellation-error order.
+\item \(\max,|\cdot|\): Maximum operator and absolute value.
+\end{itemize}
+
+
+Calculations use float64. Covariance validation tolerates asymmetry and
+negative eigenvalues only at \(100n\epsilon_{mach}\max|S_{ij}|\). It
+symmetrizes and clips negative eigenvalues only inside that allowance,
+then uses the same effective matrix for risk and gradients. Materially
+indefinite matrices are rejected. This relative rule has no absolute
+floor hiding errors at small scales. The risk API reports the Frobenius
+norm of its covariance correction.
+
+Weights must sum to one within \(10^{-12}\); they are not silently
+renormalized. Dollar normalization is explicit. Central finite
+differences have truncation error \(O(h^2)\) and cancellation error
+roughly \(O(\epsilon_{mach}/h)\). Multiple step sizes are used, with
+relative tolerances up to \(3\cdot10^{-6}\) for coarse steps and
+absolute allowances near zero. See
+\href{https://docs.pytorch.org/docs/2.14/notes/gradcheck.html}{gradcheck
+mechanics}; PyTorch is not a dependency.
+
+OSQP checks request absolute and relative tolerances \(10^{-10}\).
+Comparisons allow objective relative error \(10^{-7}\) and absolute
+error \(10^{-10}\), alongside engine convergence and feasibility
+diagnostics. Singular problems may have several minimizers, so equal
+weights are not required. Near-zero volatility can make sensitivities
+ill-conditioned even when variance evaluation is stable. Extreme
+floating-point scale testing remains a hardening task.
+
+\subsection{Worked interpretation}\label{worked-interpretation}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(g_j,V,j\): Volatility-gradient entry, total portfolio value, and asset index.
+\end{itemize}
+
+
+The synthetic portfolio has volatility .1374045123 and contributions
+.1152800569 and .0221244554. Fixed-alpha shrinkage changes volatility
+from .1374045 at zero to .1140175 at one; this spread measures model
+dependence, not statistical confidence. The purchase example shows
+increasing error in a local derivative approximation as purchases grow.
+
+For the same covariance, holdings \((600,400)\), contribution 200 and
+caps \((.6,.6)\), the solution purchases \((0,200)\) and ends at
+\((.5,.5)\) with variance .0155. Along the feasible interval the
+variance derivative favors additional B, but the no-sale bound prevents
+reducing A below .5. The optimum is at a boundary despite a nonzero
+unconstrained gradient.
+
+\subsection{Historical evaluation}\label{remaining-empirical-work}
+\subsection*{Historical contribution backtest}
+\begin{itemize}
+\item \(h_{t-1},h_t^-,h_t,x_t\): Prior end-of-day holdings, holdings after deposits before returns, current end-of-day holdings, and current purchase dollars; minus labels a pre-return state.
+\item \(t,r_t,R_t\): Day index, vector of asset returns, and portfolio return excluding the direct deposit effect.
+\item \(\mathbf1,{}^T,\odot\): All-ones vector, transpose, and entrywise multiplication.
+\item \(I_t,I_T,I_0,\prod_t\): Time-weighted wealth index, its final value, initial index of one, and product over days.
+\item \(T,s,I_s,\min_t,\max\): Final observation index, earlier day index in the running maximum, index at that earlier day, minimum over days, and maximum operator.
+\item \(s(R_t)\): Sample standard deviation of the daily portfolio-return series; $s$ is a function name here, not the earlier covariance scale.
+\end{itemize}
+
+The cumulative evaluator is separate from the fixed-holdings variance study.
+At each decision date it fits Ledoit--Wolf covariance on the preceding 126
+observations, before consuming that day's return. Initial holdings are 1,000
+dollars divided equally; every 21 observations adds 200 dollars. There are
+no sales and no concentration cap below 100\%. The comparator makes equal-dollar
+purchases on the same dates with the same cash flows. Neither policy chooses
+parameters from future outcomes.
+
+Let $h_t^-=h_{t-1}+x_t$ be holdings after any contribution but before the
+daily return. Then $h_t=h_t^-\odot(\mathbf1+r_t)$ and the portfolio return is
+$R_t=\mathbf1^Th_t/\mathbf1^Th_t^- -1$. The time-weighted index
+$I_T=\prod_t(1+R_t)$ removes the direct deposit effect. Drawdown is
+$\min_t\{I_t/\max_{0\le s\le t}I_s-1\}$ with $I_0=1$; annualized
+volatility is $\sqrt{252}\,s(R_t)$. Terminal wealth is reported separately
+because it includes deposits. Holdings drift daily; this differs from the
+constant-weight portfolio used in variance calibration.
+
+Zero returns must give terminal wealth equal to initial wealth plus deposits,
+zero time-weighted return and zero drawdown. A common 1\% daily return has
+a closed-form wealth ledger, independently tested. Changing observations
+after a cutoff must leave the earlier cash-flow ledger and decisions exactly
+unchanged. Contiguous input arrays fix layout-dependent reduction differences
+without weakening that exact-prefix test. Missing market return dates suppress
+the hosted backtest, since skipping them would omit unknown wealth changes.
+Fees, taxes, spreads, executable prices, point-in-time vintages and survivorship
+effects are not modeled.
+
+The seeded four-regime Gaussian stress simulation contains 1,008 observations
+and four assets. It evaluates 882 observations and 42 contributions totaling
+8,400 dollars. On the Python 3.10 runner, optimized / equal-purchase terminal
+wealth was 8,460.41 / 8,507.02 dollars, time-weighted return 1.3306\% / 2.3450\%,
+volatility 23.3873\% / 23.2907\%, and drawdown $-38.0320\%$ / $-37.0318\%$.
+The optimized policy was worse on these realized measures: minimizing fitted
+variance at each contribution is not a guarantee of lower subsequent variance,
+drawdown or higher return. This is synthetic stress evidence, not market performance.
+
+The extended hosted market-data run used SPY, BND, GLD and QQQ with 1,513
+complete IEX-adjusted daily returns, retrieved on 9 October 2026 at
+22:05:14 UTC under revision \texttt{cb737b9b}. The backtest evaluated 1,387
+observations from 5 April 2021 through 9 October 2026, making 67 contributions
+totaling 13,400 dollars. All solves converged; no missing daily returns were
+skipped. Aggregate results were:
+\begin{center}
+\begin{tabular}{lrr}
+\toprule
+Measure & Minimum variance & Equal purchases \\
+\midrule
+Terminal wealth (dollars) & 17,738.59 & 23,078.07 \\
+Time-weighted return & 31.99\% & 93.75\% \\
+Annualized volatility & 7.20\% & 12.27\% \\
+Maximum drawdown & $-18.66\%$ & $-21.70\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Lower volatility and drawdown accompanied lower return and wealth on this
+chosen history. This tradeoff does not establish general superiority.
+The independent fixed-holdings study on the same snapshot completed 360
+model evaluations across 60 test blocks. Mean calibration ratios for sample
+/ Ledoit--Wolf were 1.1684 / 1.1366 (63 observations), 1.1975 / 1.1765 (126),
+and 1.1870 / 1.1696 (252). Ratios above one indicate underestimation of
+subsequent variance on average in these groups. Present-day adjustments,
+surviving selected tickers and the unverified provider dividend convention
+prevent treating this as an unbiased investment backtest. These aggregates describe a recorded historical snapshot, not a fresh-data guarantee.
+The \href{https://github.com/eshangark/portfolio-risk-engine/blob/main/examples/live_report.py}{live report script}
+reproduces the evaluation protocol against retrieved history; raw market histories
+and credentials are not committed.
+
+\subsection*{Variance calibration and limitations}
+\begin{itemize}
+\item \(w_t,r_s,t,s\): Weights fitted at decision time $t$, asset returns in later test observation $s$, decision index, and test-observation index.
+\item \(\operatorname{Var}_{\mathrm{test}},{}^T\): Sample variance within the held-out test block and transpose.
+\item \(L^1\): Sum of absolute component changes in consecutive allocation vectors; the superscript identifies the norm, not a power.
+\end{itemize}
+
+
+Unperformed work includes live corporate-action validation, SIP entitlement checks
+and broader empirical analysis. The implemented
+research protocol fits windows of 63, 126 and 252 observations through a cutoff,
+then evaluates the next 21 observations, using nonoverlapping test blocks.
+Each cutoff poses an independent contribution problem with fixed initial
+holdings of 100 dollars per asset and a 200-dollar contribution. It is not
+a cumulative trading simulation. For fitted weights \(w_t\), it compares
+predicted annual variance with \(252\operatorname{Var}_{\mathrm{test}}(r_s^Tw_t)\),
+using sample normalization within the test block. The calibration ratio and
+successive allocation \(L^1\) changes summarize variance fit and stability.
+Future-perturbation tests ensure that changing test observations cannot change
+the first fitted allocation. Present-day adjusted history and a surviving-symbol
+universe can still introduce vintage or selection bias despite correct slicing.
+
+The hosted runner at revision \texttt{8da7a371} completed 36 evaluations across
+six test blocks on the SPY/BND snapshot retrieved at
+\texttt{2026-10-09T21:38:30.377874+00:00}. Mean calibration ratios were:
+\begin{center}
+\begin{tabular}{rrr}
+\toprule
+Training observations & Sample & Ledoit--Wolf \\
+\midrule
+63 & 0.9040 & 0.8344 \\
+126 & 1.0251 & 0.9666 \\
+252 & 1.2418 & 1.1551 \\
+\bottomrule
+\end{tabular}
+\end{center}
+Each group contains only six evaluations. Mean successive allocation
+$L^1$ change was zero in each group, consistent with unchanged boundary
+solutions. This selected two-asset example cannot establish estimator superiority
+or general allocation stability. The daily-return dataset SHA-256 identity is
+\begin{quote}\ttfamily\small
+2a3c00006e0e1b8b35309c375b0c00989\\
+d291c180d78ca569382c371e9905080
+\end{quote}
+
+The benchmark compares validated risk APIs against the vectorized NumPy
+reference, with five warm-up calls and seven batches of 30 calls at 2, 10
+and 50 assets. It records median and percentile timings, compiler, platform,
+NumPy build configuration and thread settings. These are end-to-end costs
+including validation, eigendecomposition and Python/C++ crossing, not isolated
+kernel timings. Isolating pure binding overhead remains a separate benchmark.
+API timings do not imply any investment-return advantage.
+
+\subsection{Measured timings}
+
+The synthetic factor study uses seed 24109, 504 observations and three
+assets. It completed 72 evaluations with mean calibration ratio 1.0096.
+This is a reproducible exercise of the protocol under synthetic data,
+not empirical evidence about market covariance or an estimated confidence
+level. Full evaluation records are retained in the workflow artifacts.
+
+On the Python 3.12 Ubuntu x86-64 runner, using GCC 13.3 and one configured
+BLAS/OpenMP thread, measured median microseconds per validated API call were:
+
+\begin{center}
+\begin{tabular}{rrrr}
+\toprule
+Assets & NumPy & C++ analytical & C++ AD \\
+\midrule
+2 & 34.44 & 3.48 & 4.48 \\
+10 & 45.14 & 9.98 & 30.41 \\
+50 & 285.10 & 182.34 & 884.69 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The analytical C++ path was faster for these cases, while the AD path was
+slower than NumPy at 50 assets. Graph construction and traversal have a
+material cost. This result depends on the tested APIs, runner and dimensions;
+it is not a claim that C++ or AD is universally faster. The
+\href{https://github.com/eshangark/portfolio-risk-engine/blob/main/examples/benchmark.py}{benchmark script}
+records percentile timings and the numerical-library environment.
+
+
+\subsection{Comprehension questions}\label{comprehension-questions}
+
+\textbf{Symbols used in this subsection}
+\begin{itemize}
+\item \(g_j,V,j\): Volatility-gradient entry, total portfolio value, and asset index.
+\end{itemize}
+
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Why does a 60\% capital holding contribute about 84\% of volatility?
+\item
+  Why is a new-dollar derivative \((g_j-\sigma)/V\) instead of
+  \(g_j/V\)?
+\item
+  Why can singular covariance be valid while optimal weights are
+  nonunique?
+\item
+  Why can a constrained optimum have a nonzero ordinary gradient?
+\item
+  Which assumptions justify square-root-of-time annualization?
+\end{enumerate}
+
+\section{6. References and glossary}\label{references-and-glossary}
+
+Sources consulted on 2026-10-08. Documentation is mutable; recheck when
+implementing integrations. Entries distinguish material actually
+consulted from full proofs not yet reviewed.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{MOSEK, Portfolio Optimization Cookbook},
+  \href{https://docs.mosek.com/portfolio-cookbook/markowitz.html}{chapter
+  2}, and
+  \href{https://docs.mosek.com/portfolio-cookbook/risk_parity.html}{chapter
+  9}. Consulted portfolio formulation and Euler attribution. Our
+  contribution-only allocation is a project-specific specialization.
+\item
+  \textbf{Olivier Ledoit and Michael Wolf (2004)}, ``A well-conditioned
+  estimator for large-dimensional covariance matrices,'' \emph{Journal
+  of Multivariate Analysis} 88(2), 365--411,
+  \href{https://www.sciencedirect.com/science/article/pii/S0047259X03000964}{DOI
+  10.1016/S0047-259X(03)00096-4}. Publisher abstract and indexed
+  author-paper introduction consulted for motivation and scope of
+  asymptotic covariance-loss claims. Full proof review remains pending;
+  author-hosted PDF retrieval was unsuccessful. No theorem from the
+  unread proof is claimed as newly verified.
+\item
+  \textbf{scikit-learn},
+  \href{https://scikit-learn.org/stable/modules/generated/sklearn.covariance.LedoitWolf.html}{LedoitWolf
+  API}. Consulted the scaled-identity formula and centering contract.
+  The estimator wrapper is implemented and empirical normalization is
+  tested.
+\item
+  \textbf{Atılım Güneş Baydin, Barak A. Pearlmutter, Alexey Andreyevich
+  Radul, Jeffrey Mark Siskind (2018)}, ``Automatic Differentiation in
+  Machine Learning: a Survey,'' \emph{JMLR} 18(153), 1--43.
+  \href{https://www.jmlr.org/beta/papers/v18/17-468.html}{Publisher
+  record},
+  \href{https://jmlr.org/papers/volume18/17-468/17-468.pdf}{paper}.
+  Consulted section 3, reverse traversal and accumulation. Its title
+  does not imply machine learning is part of our project.
+\item
+  \textbf{Neal Parikh and Stephen Boyd (2014)}, ``Proximal Algorithms,''
+  \emph{Foundations and Trends in Optimization} 1(3), 127--239.
+  \href{https://web.stanford.edu/~boyd/papers/pdf/prox_algs.pdf}{Author-hosted
+  paper}. Consulted projected gradient as proximal gradient for a set
+  indicator; project-specific capped-simplex derivation is provided in
+  chapter 3.
+\item
+  \textbf{PyTorch},
+  \href{https://docs.pytorch.org/docs/2.14/notes/gradcheck.html}{Gradcheck
+  mechanics}. Consulted central finite differences and analytical
+  comparison. Reference tests do not use PyTorch.
+\item
+  \textbf{pybind11},
+  \href{https://pybind11.readthedocs.io/en/stable/}{official
+  documentation}. Consulted C++/Python integration overview. The
+  extension uses CMake and scikit-build-core; tests exercise arrays and
+  handle lifetime.
+\item
+  \textbf{Alpaca},
+  \href{https://docs.alpaca.markets/us/docs/about-market-data-api}{Market
+  Data API overview} and
+  \href{https://docs.alpaca.markets/us/reference/stockbars}{historical
+  bars endpoint}. Consulted feed/access distinctions, pagination and
+  adjustment options. Data entitlement and display/redistribution terms
+  are not yet validated.
+\item
+  \textbf{Streamlit},
+  \href{https://docs.streamlit.io/deploy/streamlit-community-cloud}{Community
+  Cloud},
+  \href{https://docs.streamlit.io/deploy/streamlit-community-cloud/share-your-app}{privacy/sharing},
+  and
+  \href{https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/app-dependencies}{dependencies}.
+  Consulted private-app allowance and Linux dependency mechanism. Private
+  hosted build and IEX integration were checked on 9 October 2026.
+\end{enumerate}
+
+\clearpage
+\subsection{Glossary}\label{glossary}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Term
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Meaning here
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Covariance & Expected product of centered returns \\
+PSD & Every quadratic form is nonnegative \\
+Eigenvalue & Variance scaling along an eigenvector direction \\
+Conditioning & Sensitivity of a numerical problem to input
+perturbations \\
+Shrinkage & Blend an estimate with a structured target \\
+Gradient & Vector of unconstrained coordinate derivatives \\
+Directional derivative & Local change along a specified direction \\
+Adjoint & Derivative of the output with respect to an intermediate
+node \\
+Tape & Stored computational graph and intermediate values \\
+Projection & Nearest feasible point in the chosen norm \\
+KKT conditions & Feasibility, stationarity, multiplier signs and
+complementarity \\
+Residual & Quantified violation of a constraint or optimality
+condition \\
+Annualization & Conversion under declared time-aggregation
+assumptions \\
+Sensitivity & Change under specified perturbations, not a confidence
+interval \\
+\end{longtable}
+}
+
+\end{document}
