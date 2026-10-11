@@ -33,7 +33,7 @@ input, textarea {{background: {palette['surface']} !important; color: {palette['
 [data-testid="stMarkdownContainer"] a {{color: {palette['accent']};}}
 </style>""",unsafe_allow_html=True)
 st.markdown("""<style>
-.block-container {max-width: 1200px; padding-top: 2rem;}
+.block-container {max-width: 1200px; padding-top: 4.5rem;}
 h1 {letter-spacing: -.04em;} h2,h3 {letter-spacing: -.02em;}
 [data-testid="stMetric"] {border-radius: 16px; padding: 18px;}
 .stButton > button {border-radius: 10px;}
