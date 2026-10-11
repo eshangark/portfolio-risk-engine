@@ -33,6 +33,7 @@ input, textarea {{background: {palette['surface']} !important; color: {palette['
 [data-testid="stToolbar"] button, [data-testid="stHeader"] svg {{color: {palette['muted']} !important;}}
 button[aria-haspopup="listbox"], [role="group"]:has(input[role="combobox"]) {{background: {palette['surface']} !important; color: {palette['text']} !important; border-color: {palette['border']} !important;}}
 button[aria-haspopup="listbox"] svg {{color: {palette['text']} !important;}}
+[data-testid="stDataFrame"] button, [data-testid="stDataFrame"] button svg {{color: #192D3A !important;}}
 [data-testid="stDataFrame"] {{filter: {'invert(0.93) hue-rotate(180deg)' if dark_mode else 'none'};}}
 [data-testid="stMarkdownContainer"] a {{color: {palette['accent']};}}
 [data-testid="stTooltipContent"], [data-baseweb="tooltip"], [data-baseweb="popover"] > div, [role="tooltip"], [role="listbox"], [role="menu"], [data-testid="stDialog"] [role="dialog"] {{background: {palette['surface']} !important; color: {palette['text']} !important; border: 1px solid {palette['border']};}}
