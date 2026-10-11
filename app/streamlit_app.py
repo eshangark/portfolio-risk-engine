@@ -37,10 +37,10 @@ input, textarea {{background: {palette['surface']} !important; color: {palette['
 [role="option"] {{background: {palette['surface']} !important; color: {palette['text']} !important;}}
 [role="option"]:hover, [role="menuitem"]:hover {{background: {palette['border']} !important;}}
 [data-testid="stTooltipIcon"] svg, [data-testid="stTooltipHoverTarget"] svg {{color: {palette['muted']} !important;}}
-[data-testid="stPills"] button {{background: {palette['surface']} !important; color: {palette['text']} !important; border: 1px solid {palette['border']} !important;}}
-[data-testid="stPills"] button[aria-pressed="true"] {{background: {palette['accent']} !important; color: {palette['background']} !important;}}
-[data-testid="stPills"] button[aria-pressed="true"] p {{color: {palette['background']} !important;}}
-[data-testid="stPills"] button:focus-visible {{outline: 2px solid {palette['accent']}; outline-offset: 3px;}}
+button[data-variant="pills"] {{background: {palette['surface']} !important; color: {palette['text']} !important; border: 1px solid {palette['border']} !important;}}
+button[data-variant="pills"][aria-checked="true"] {{background: {palette['accent']} !important; color: {palette['background']} !important;}}
+button[data-variant="pills"][aria-checked="true"] p {{color: {palette['background']} !important;}}
+button[data-variant="pills"]:focus-visible {{outline: 2px solid {palette['accent']}; outline-offset: 3px;}}
 </style>""",unsafe_allow_html=True)
 st.markdown("""<style>
 .block-container {max-width: 1200px; padding-top: 4.5rem;}
