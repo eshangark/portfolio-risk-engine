@@ -32,8 +32,10 @@ input, textarea {{background: {palette['surface']} !important; color: {palette['
 [data-baseweb="slider"] {{color: {palette['text']} !important;}}
 [data-testid="stToolbar"] button, [data-testid="stHeader"] svg {{color: {palette['muted']} !important;}}
 [data-testid="stMarkdownContainer"] a {{color: {palette['accent']};}}
-[data-baseweb="tooltip"], [data-baseweb="popover"] > div, [role="tooltip"], [role="listbox"], [role="menu"], [data-testid="stDialog"] [role="dialog"] {{background: {palette['surface']} !important; color: {palette['text']} !important; border: 1px solid {palette['border']};}}
-[data-baseweb="tooltip"] *, [data-baseweb="popover"] *, [role="tooltip"] *, [role="listbox"] *, [role="menu"] * {{color: {palette['text']} !important;}}
+[data-testid="stTooltipContent"], [data-baseweb="tooltip"], [data-baseweb="popover"] > div, [role="tooltip"], [role="listbox"], [role="menu"], [data-testid="stDialog"] [role="dialog"] {{background: {palette['surface']} !important; color: {palette['text']} !important; border: 1px solid {palette['border']};}}
+[data-testid="stTooltipContent"] *, [data-baseweb="tooltip"] *, [data-baseweb="popover"] *, [role="tooltip"] *, [role="listbox"] *, [role="menu"] * {{color: {palette['text']} !important;}}
+[data-baseweb="select"] button {{background: {palette['surface']} !important; color: {palette['text']} !important;}}
+[data-baseweb="select"] svg {{color: {palette['text']} !important;}}
 [role="option"] {{background: {palette['surface']} !important; color: {palette['text']} !important;}}
 [role="option"]:hover, [role="menuitem"]:hover {{background: {palette['border']} !important;}}
 [data-testid="stTooltipIcon"] svg, [data-testid="stTooltipHoverTarget"] svg {{color: {palette['muted']} !important;}}
