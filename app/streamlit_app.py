@@ -20,8 +20,19 @@ h1 {letter-spacing: -.04em;} h2,h3 {letter-spacing: -.02em;}
 </style>""", unsafe_allow_html=True)
 st.caption('PORTFOLIO ANALYSIS')
 st.title('Understand your portfolio risk')
-st.write('See where risk comes from, compare a purchase, and explore how to invest a new contribution.')
-st.caption('Start with the demo, or choose market data in the sidebar. Calculations update when you change an input. No orders are placed.')
+st.write('Go from understanding your risk to exploring what to do with new money. The engine combines asset co-movement, automatic differentiation, and constrained optimization to explain risk and calculate contribution allocations. Start with the demo below, then choose market data in the sidebar to explore your own holdings; no orders are placed.')
+feature_columns=st.columns(4)
+for column,title,description in zip(feature_columns,
+        ['1 · Understand risk','2 · Test a purchase','3 · Optimize new money','4 · Check against history'],
+        ['See which assets drive volatility, beyond their share of your money.',
+         'Compare risk before and after a purchase, with a derivative-based estimate.',
+         'Calculate purchases that minimize estimated variance within your concentration limit.',
+         'Compare estimated risk with later observations and backtest contributions.']):
+    with column:
+        with st.container(border=True):
+            st.markdown(f'**{title}**')
+            st.caption(description)
+st.caption('Explore the four tabs below. Try Allocate a contribution to see the optimizer in action; expand calculation panels for the mathematics.')
 source=st.sidebar.radio('Data source',['Synthetic example','Alpaca market data'])
 st.sidebar.caption(f'Numerical engine {_core.__version__} · C++17')
 st.sidebar.caption('Supported: USD US stocks and unleveraged ETFs. Purchases only; fractional shares; no cash balance.')
@@ -102,6 +113,8 @@ weights=holdings/holdings.sum()
 result=_core.risk(weights,cov,autodiff=True)
 overview,purchase_tab,allocation_tab,history_tab=st.tabs(['Overview','Compare a purchase','Allocate a contribution','Historical checks'])
 with overview:
+    st.subheader('Where does your risk come from?')
+    st.write('This page separates the share of money in each asset from its contribution to portfolio risk. The engine combines portfolio weights with asset variability and co-movement, then uses derivatives to attribute volatility. Compare the capital and risk shares below to identify which holdings drive the estimate.')
     col1,col2=st.columns(2)
     col1.metric('Estimated annual volatility',f"{result['volatility']:.2%}")
     col2.metric('Portfolio value',f'${holdings.sum():,.2f}')
@@ -129,7 +142,7 @@ with overview:
 
 with purchase_tab:
     st.subheader('What changes if you buy more?')
-    st.write('Choose an asset and an amount. We add the dollars, recalculate every weight, and compare the resulting risk with today’s portfolio.')
+    st.write('Explore how adding money to one asset would change your portfolio risk. The engine recalculates every weight and volatility, and uses automatic differentiation to show a small-change approximation alongside the exact result. Choose an asset and a purchase amount below, then compare the before-and-after risk and approximation error.')
     asset=st.selectbox('Buy asset',symbols)
     amount=st.number_input('New cash purchase ($)',min_value=0.,value=100.)
     delta=np.zeros(len(symbols)); delta[symbols.index(asset)]=amount
@@ -146,7 +159,7 @@ with purchase_tab:
         st.write('The exact result recalculates volatility with the new weights. The derivative is a local approximation; larger purchases can make it less accurate.')
 with allocation_tab:
     st.subheader('Where could a new contribution go?')
-    st.write('The engine distributes your contribution to minimize estimated variance while respecting your concentration limit. Existing holdings are kept.')
+    st.write('Turn a contribution budget into a calculated purchase amount for each asset. The engine uses automatic differentiation and repeated gradient steps, adjusting each candidate to spend the budget, avoid selling, and respect your final concentration limit while minimizing estimated variance. Enter your contribution and weight limit below, then inspect the purchase table and resulting risk; this objective does not maximize returns or guarantee future results.')
     budget=st.number_input('Total contribution ($)',min_value=0.,value=200.)
     cap=st.slider('Maximum post-contribution weight per asset',min_value=0.01,max_value=1.,value=.60,step=.01)
     try:
@@ -179,10 +192,9 @@ with allocation_tab:
             st.caption('Allocation differences across models are sensitivity results, not a calibrated confidence interval.')
     except ValueError as exc: st.error(f'No feasible allocation: {exc}')
 with history_tab:
-
+    st.subheader('Check the model against history')
+    st.write('Explore whether risk estimates and contribution allocations held up on later historical observations. The engine fits each model on preceding data, evaluates subsequent returns, and compares optimized contributions with equal-dollar purchases using the same cash flows. Load market data, then run either study below and compare risk, returns, and drawdowns; these experiments do not establish future performance.')
     if returns is not None:
-        st.subheader('Check the model against history')
-        st.write('These are hypothetical historical experiments. Use them to assess the model, rather than as a promise about future performance.')
         with st.expander('Does estimated risk match later observations?'):
             st.write('Fit on preceding 63, 126 or 252 observations and evaluate the next 21 observations. Each decision starts with 100 dollars per asset and a 200-dollar contribution, with no concentration cap beyond 100%.')
             st.caption('This uses independent hypothetical decisions, not your holdings or a cumulative trading strategy. Revised history and a chosen asset universe can still introduce bias.')
