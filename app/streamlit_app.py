@@ -4,6 +4,7 @@ import hashlib
 from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
+import altair as alt
 import streamlit as st
 from portfolio_risk import _core
 from portfolio_risk.data import AlpacaData,DataError,prepare_history,symbols_checked,completed_history_end
@@ -12,12 +13,40 @@ from portfolio_risk.research import chronological_study
 from portfolio_risk.backtest import contribution_backtest
 
 st.set_page_config(page_title='Portfolio Risk Engine',page_icon='∇',layout='wide')
+dark_mode=st.toggle('Dark mode',key='dark_mode',help='Switch the dashboard between light and dark. Your choice stays active while you explore the tabs.')
+palette=({'background':'#101820','surface':'#1C2935','text':'#E8EFF5','muted':'#B5C5D1','border':'#3D5263','accent':'#70D0D8'}
+         if dark_mode else {'background':'#FAFBFC','surface':'#EEF2F5','text':'#192D3A','muted':'#526574','border':'#C8D2DA','accent':'#286E77'})
+st.markdown(f"""<style>
+.stApp, [data-testid="stHeader"], [data-testid="stSidebar"] {{background: {palette['background']}; color: {palette['text']}; color-scheme: {'dark' if dark_mode else 'light'};}}
+[data-testid="stAppViewContainer"] {{color: {palette['text']};}}
+[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p, h1,h2,h3, label, [data-testid="stMetricValue"], [data-testid="stWidgetLabel"] p {{color: {palette['text']} !important;}}
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {{color: {palette['muted']} !important;}}
+[data-testid="stVerticalBlockBorderWrapper"] > div {{border-color: {palette['border']} !important;}}
+[data-testid="stMetric"], [data-testid="stExpander"], [data-testid="stAlert"], [data-testid="stJson"] {{background: {palette['surface']}; color: {palette['text']}; border-color: {palette['border']};}}
+[data-testid="stExpander"] summary, [data-testid="stExpander"] svg, [data-testid="stHeader"] button, [data-testid="stSidebar"] button {{color: {palette['text']} !important;}}
+[role="tab"] {{color: {palette['muted']} !important;}} [role="tab"][aria-selected="true"] {{color: {palette['accent']} !important;}}
+[data-baseweb="input"], [data-baseweb="textarea"], [data-baseweb="select"] > div, [data-testid="stNumberInput"] button, .stButton > button {{background: {palette['surface']} !important; color: {palette['text']} !important; border-color: {palette['border']} !important;}}
+input, textarea {{color: {palette['text']} !important; -webkit-text-fill-color: {palette['text']} !important;}}
+[data-testid="stMarkdownContainer"] a {{color: {palette['accent']};}}
+</style>""",unsafe_allow_html=True)
 st.markdown("""<style>
 .block-container {max-width: 1200px; padding-top: 2rem;}
 h1 {letter-spacing: -.04em;} h2,h3 {letter-spacing: -.02em;}
-[data-testid="stMetric"] {background: #EEF2F5; border-radius: 16px; padding: 18px;}
+[data-testid="stMetric"] {border-radius: 16px; padding: 18px;}
 .stButton > button {border-radius: 10px;}
 </style>""", unsafe_allow_html=True)
+
+def show_frame(data,**kwargs):
+    # Canvas-backed tables need cell colors as well as the surrounding CSS.
+    styled=data.style.set_properties(**{'background-color':palette['surface'],'color':palette['text']})
+    st.dataframe(styled,**kwargs)
+
+def show_chart(chart):
+    chart=(chart.configure(background=palette['background'])
+           .configure_axis(labelColor=palette['text'],titleColor=palette['text'],gridColor=palette['border'],domainColor=palette['border'])
+           .configure_legend(labelColor=palette['text'],titleColor=palette['text'])
+           .configure_view(stroke=palette['border']))
+    st.altair_chart(chart,use_container_width=True,theme=None)
 st.caption('PORTFOLIO ANALYSIS')
 st.title('Understand your portfolio risk')
 st.write('Go from understanding your risk to exploring what to do with new money. The engine combines asset co-movement, automatic differentiation, and constrained optimization to explain risk and calculate contribution allocations. Start with the demo below, then choose market data in the sidebar to explore your own holdings; no orders are placed.')
@@ -92,7 +121,7 @@ else:
         cov=estimate.covariance
         if unit=='Shares':
             latest=provider.latest_prices(symbols,now)
-            st.dataframe(pd.DataFrame(latest).T)
+            show_frame(pd.DataFrame(latest).T)
             if any(row['stale'] for row in latest.values()): raise DataError('Valuation stopped because one or more recent prices are stale.')
             holdings=amounts*np.array([latest[s]['price'] for s in symbols])
         else: holdings=amounts*(notional if unit=='Weights' else 1)
@@ -104,7 +133,7 @@ else:
                      'window_end':str(returns.index[-1].date()),
                      'normalization':estimate.normalization,'shrinkage':estimate.shrinkage,
                      'annualization':estimate.annualization})
-            st.dataframe(returns.tail(10))
+            show_frame(returns.tail(10))
         st.caption(f'History retrieved {history.retrieved_at}. Feed: {feed.upper()}. Completed daily returns; this is not a streaming quote display.')
         st.warning('Provider-adjusted history is used. Its dividend convention has not yet been checked against live events.')
     except (ValueError,DataError) as exc: st.error(str(exc)); st.stop()
@@ -129,16 +158,17 @@ with overview:
     if rc is not None:
         frame['Risk contribution']=rc; frame['Share of volatility']=rc/result['volatility']
         frame['Marginal volatility']=grad
-        st.dataframe(frame[['Asset','Capital weight','Dollar holding','Share of volatility']].set_index('Asset'),width='stretch',column_config={'Capital weight':st.column_config.NumberColumn(format='percent'),'Share of volatility':st.column_config.NumberColumn(format='percent'),'Dollar holding':st.column_config.NumberColumn(format='dollar')})
+        show_frame(frame[['Asset','Capital weight','Dollar holding','Share of volatility']].set_index('Asset'),width='stretch',column_config={'Capital weight':st.column_config.NumberColumn(format='percent'),'Share of volatility':st.column_config.NumberColumn(format='percent'),'Dollar holding':st.column_config.NumberColumn(format='dollar')})
         st.caption('Capital weight is your share of invested money. Share of volatility is each asset’s contribution to total risk; it can be negative when an asset offsets other risks.')
         with st.expander('Risk attribution mathematics'):
             st.latex(r'RC_i=w_i(\Sigma w)_i/\sigma,\qquad \sum_i RC_i=\sigma')
             st.markdown('- $RC_i$: asset $i$’s contribution to portfolio volatility.\n- $w$: vector of portfolio weights; $w_i$ is the weight of asset $i$.\n- $i$: an asset index; $(\\Sigma w)_i$ selects entry $i$ of the matrix–vector product.\n- $\\sum_i$: sum across assets.')
-            st.dataframe(frame.set_index('Asset'),width='stretch')
+            show_frame(frame.set_index('Asset'),width='stretch')
         leader=int(np.argmax(rc)); st.write(f"{symbols[leader]} contributes the most estimated volatility: {rc[leader]/result['volatility']:.1%}, compared with {weights[leader]:.1%} of capital.")
-        st.bar_chart(frame.set_index('Asset')[['Capital weight','Share of volatility']],stack=False)
+        chart_data=frame[['Asset','Capital weight','Share of volatility']].melt('Asset',var_name='Measure',value_name='Share')
+        show_chart(alt.Chart(chart_data).mark_bar().encode(x='Asset:N',xOffset='Measure:N',y=alt.Y('Share:Q',axis=alt.Axis(format='%')),color=alt.Color('Measure:N',scale=alt.Scale(range=['#70D0D8','#E8AA65'])),tooltip=['Asset','Measure',alt.Tooltip('Share:Q',format='.1%')]))
     else:
-        st.dataframe(frame); st.info('Volatility is zero; the usual volatility gradient is unavailable.')
+        show_frame(frame); st.info('Volatility is zero; the usual volatility gradient is unavailable.')
 
 with purchase_tab:
     st.subheader('What changes if you buy more?')
@@ -168,7 +198,7 @@ with allocation_tab:
         if not allocation['converged']:
             st.warning('The solver did not finish. No allocation recommendation is shown; change the inputs and try again.')
             raise ValueError('Optimization has not converged.')
-        st.dataframe(pd.DataFrame({'Asset':symbols,'Purchase dollars':allocation['purchases'],'Resulting weight':allocation['weights']}).set_index('Asset'),width='stretch')
+        show_frame(pd.DataFrame({'Asset':symbols,'Purchase dollars':allocation['purchases'],'Resulting weight':allocation['weights']}).set_index('Asset'),width='stretch')
         st.write(f"Allocated volatility: {np.sqrt(allocation['variance']):.4%}. Variance improvement over a feasible projected-equal-purchase baseline: {allocation['improvement']:.6g}.")
         st.caption('Lower estimated variance is the objective. This does not maximize returns or guarantee lower future risk.')
         with st.expander('How the allocation is calculated'):
@@ -188,7 +218,7 @@ with allocation_tab:
                     comparisons.append({'Window':count,'Estimator':name,'Volatility':np.sqrt(solution['variance']),
                                         'Converged':solution['converged'],**{s:float(x) for s,x in zip(symbols,solution['purchases'])}})
             st.subheader('Sensitivity to estimation choices')
-            st.dataframe(pd.DataFrame(comparisons),width='stretch')
+            show_frame(pd.DataFrame(comparisons),width='stretch')
             st.caption('Allocation differences across models are sensitivity results, not a calibrated confidence interval.')
     except ValueError as exc: st.error(f'No feasible allocation: {exc}')
 with history_tab:
@@ -208,9 +238,9 @@ with history_tab:
                         evaluations=('converged','size'),
                         mean_calibration_ratio=('calibration_ratio','mean'),
                         mean_allocation_l1_change=('allocation_l1_change','mean'))
-                    st.dataframe(summary,width='stretch')
+                    show_frame(summary,width='stretch')
                     st.caption('Calibration ratio = realized / estimated annual variance. A ratio near one on this short sample does not establish predictive accuracy.')
-                    st.dataframe(rows.drop(columns=['weights']),width='stretch')
+                    show_frame(rows.drop(columns=['weights']),width='stretch')
                     st.json({'dataset_sha256':prepared.identity,'feed':feed,'adjustment':history.adjustment,
                              'retrieved_at':history.retrieved_at,'design':study['design'],
                              'initial_dollars_per_asset':study['initial_dollars_per_asset'],
@@ -227,10 +257,11 @@ with history_tab:
                             raise ValueError('Backtests require complete adjacent-session history; missing daily returns cannot be skipped.')
                         backtest=contribution_backtest(returns)
                     metrics=pd.DataFrame({name:backtest[name] for name in ('optimized','equal_purchases')}).T.rename(index={'optimized':'Minimum-variance purchases','equal_purchases':'Equal-dollar purchases'},columns={'terminal_wealth':'Ending value ($)','time_weighted_return':'Return excluding deposits','annualized_volatility':'Annual volatility','max_drawdown':'Largest decline'})
-                    st.dataframe(metrics,width='stretch',column_config={k:st.column_config.NumberColumn(format='percent') for k in ('Return excluding deposits','Annual volatility','Largest decline')})
+                    show_frame(metrics,width='stretch',column_config={k:st.column_config.NumberColumn(format='percent') for k in ('Return excluding deposits','Annual volatility','Largest decline')})
                     st.write(f"{backtest['observations']} evaluated observations; {len(backtest['decisions'])} contributions totaling {backtest['total_contributions']:,.2f} dollars.")
                     ledger=pd.DataFrame(backtest['ledger']).set_index('date')
-                    st.line_chart(ledger[['wealth','equal_purchase_wealth']])
+                    chart_data=ledger[['wealth','equal_purchase_wealth']].rename(columns={'wealth':'Minimum-variance purchases','equal_purchase_wealth':'Equal-dollar purchases'}).reset_index().melt('date',var_name='Strategy',value_name='Value')
+                    show_chart(alt.Chart(chart_data).mark_line().encode(x=alt.X('date:T',title='Date'),y=alt.Y('Value:Q',title='Portfolio value ($)'),color=alt.Color('Strategy:N',scale=alt.Scale(range=['#70D0D8','#E8AA65'])),tooltip=['date:T','Strategy',alt.Tooltip('Value:Q',format=',.2f')]))
                     st.caption('Terminal wealth includes deposits. Time-weighted return removes the direct effect of deposits; volatility and drawdown use the daily time-weighted return series.')
                     st.json({k:v for k,v in backtest.items() if k not in ('ledger','decisions','optimized','equal_purchases')})
                 except ValueError as exc:
