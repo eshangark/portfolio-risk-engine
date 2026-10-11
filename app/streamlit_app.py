@@ -13,7 +13,8 @@ from portfolio_risk.research import chronological_study
 from portfolio_risk.backtest import contribution_backtest
 
 st.set_page_config(page_title='Portfolio Risk Engine',page_icon='∇',layout='wide')
-dark_mode=st.toggle('Dark mode',key='dark_mode',help='Switch the dashboard between light and dark. Your choice stays active while you explore the tabs.')
+appearance=st.pills('Appearance',['Light','Dark'],selection_mode='single',default='Light',key='appearance')
+dark_mode=appearance=='Dark'
 palette=({'background':'#101820','surface':'#1C2935','text':'#E8EFF5','muted':'#B5C5D1','border':'#3D5263','accent':'#70D0D8'}
          if dark_mode else {'background':'#FAFBFC','surface':'#EEF2F5','text':'#192D3A','muted':'#526574','border':'#C8D2DA','accent':'#286E77'})
 st.markdown(f"""<style>
@@ -31,6 +32,15 @@ input, textarea {{background: {palette['surface']} !important; color: {palette['
 [data-baseweb="slider"] {{color: {palette['text']} !important;}}
 [data-testid="stToolbar"] button, [data-testid="stHeader"] svg {{color: {palette['muted']} !important;}}
 [data-testid="stMarkdownContainer"] a {{color: {palette['accent']};}}
+[data-baseweb="tooltip"], [data-baseweb="popover"] > div, [role="tooltip"], [role="listbox"], [role="menu"], [data-testid="stDialog"] [role="dialog"] {{background: {palette['surface']} !important; color: {palette['text']} !important; border: 1px solid {palette['border']};}}
+[data-baseweb="tooltip"] *, [data-baseweb="popover"] *, [role="tooltip"] *, [role="listbox"] *, [role="menu"] * {{color: {palette['text']} !important;}}
+[role="option"] {{background: {palette['surface']} !important; color: {palette['text']} !important;}}
+[role="option"]:hover, [role="menuitem"]:hover {{background: {palette['border']} !important;}}
+[data-testid="stTooltipIcon"] svg, [data-testid="stTooltipHoverTarget"] svg {{color: {palette['muted']} !important;}}
+[data-testid="stPills"] button {{background: {palette['surface']} !important; color: {palette['text']} !important; border: 1px solid {palette['border']} !important;}}
+[data-testid="stPills"] button[aria-pressed="true"] {{background: {palette['accent']} !important; color: {palette['background']} !important;}}
+[data-testid="stPills"] button[aria-pressed="true"] p {{color: {palette['background']} !important;}}
+[data-testid="stPills"] button:focus-visible {{outline: 2px solid {palette['accent']}; outline-offset: 3px;}}
 </style>""",unsafe_allow_html=True)
 st.markdown("""<style>
 .block-container {max-width: 1200px; padding-top: 4.5rem;}
