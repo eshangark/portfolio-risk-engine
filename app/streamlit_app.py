@@ -20,13 +20,16 @@ st.markdown(f"""<style>
 .stApp, [data-testid="stHeader"], [data-testid="stSidebar"] {{background: {palette['background']}; color: {palette['text']}; color-scheme: {'dark' if dark_mode else 'light'};}}
 [data-testid="stAppViewContainer"] {{color: {palette['text']};}}
 [data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] p, h1,h2,h3, label, [data-testid="stMetricValue"], [data-testid="stWidgetLabel"] p {{color: {palette['text']} !important;}}
-[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {{color: {palette['muted']} !important;}}
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p, [data-testid="stCaption"] {{color: {palette['muted']} !important; opacity: 1;}}
+[data-testid="stVerticalBlock"] > [data-testid="stVerticalBlockBorderWrapper"], [data-testid="stVerticalBlockBorderWrapper"] {{border-color: {palette['border']} !important;}}
 [data-testid="stVerticalBlockBorderWrapper"] > div {{border-color: {palette['border']} !important;}}
 [data-testid="stMetric"], [data-testid="stExpander"], [data-testid="stAlert"], [data-testid="stJson"] {{background: {palette['surface']}; color: {palette['text']}; border-color: {palette['border']};}}
 [data-testid="stExpander"] summary, [data-testid="stExpander"] svg, [data-testid="stHeader"] button, [data-testid="stSidebar"] button {{color: {palette['text']} !important;}}
 [role="tab"] {{color: {palette['muted']} !important;}} [role="tab"][aria-selected="true"] {{color: {palette['accent']} !important;}}
 [data-baseweb="input"], [data-baseweb="textarea"], [data-baseweb="select"] > div, [data-testid="stNumberInput"] button, .stButton > button {{background: {palette['surface']} !important; color: {palette['text']} !important; border-color: {palette['border']} !important;}}
-input, textarea {{color: {palette['text']} !important; -webkit-text-fill-color: {palette['text']} !important;}}
+input, textarea {{background: {palette['surface']} !important; color: {palette['text']} !important; -webkit-text-fill-color: {palette['text']} !important;}}
+[data-baseweb="slider"] {{color: {palette['text']} !important;}}
+[data-testid="stToolbar"] button, [data-testid="stHeader"] svg {{color: {palette['muted']} !important;}}
 [data-testid="stMarkdownContainer"] a {{color: {palette['accent']};}}
 </style>""",unsafe_allow_html=True)
 st.markdown("""<style>
