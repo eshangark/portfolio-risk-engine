@@ -35,7 +35,7 @@ st.markdown(f"""<style>
 [data-testid="stExpander"] details > summary svg {{color: {palette['text']} !important;}}
 [data-testid="stExpander"] details > summary:focus-visible {{outline: 2px solid {palette['accent']}; outline-offset: -2px;}}
 [role="tab"] {{color: {palette['muted']} !important;}} [role="tab"][aria-selected="true"] {{color: {palette['accent']} !important;}}
-[data-baseweb="input"], [data-baseweb="textarea"], [data-baseweb="select"] > div, [data-testid="stNumberInput"] button, .stButton > button {{background: {palette['surface']} !important; color: {palette['text']} !important; border-color: {palette['border']} !important;}}
+[data-baseweb="input"], [data-baseweb="textarea"], [data-baseweb="select"] > div, [data-testid="stNumberInput"] button, .stButton > button, [data-testid="stFormSubmitButton"] button {{background: {palette['surface']} !important; color: {palette['text']} !important; border-color: {palette['border']} !important;}}
 input, textarea {{background: {palette['surface']} !important; color: {palette['text']} !important; -webkit-text-fill-color: {palette['text']} !important;}}
 [data-baseweb="slider"] {{color: {palette['text']} !important;}}
 [data-testid="stToolbar"] button, [data-testid="stHeader"] svg {{color: {palette['muted']} !important;}}
@@ -277,6 +277,7 @@ with history_tab:
         st.subheader('Simulate your contribution plan')
         st.write('Choose a starting amount, regular contribution, frequency, and duration to replay your plan over recent market history. The engine compares minimum-variance purchases with splitting each contribution equally, using the same deposits and historical returns. Use the value chart and risk comparison to explore the tradeoffs; this is a historical simulation, not a forecast of what your savings will become.')
         available_months=(len(returns)-126)//21
+        st.caption(f'Available simulation length: {max(0,available_months)} months after reserving training data. Choose a longer history lookback in the sidebar for longer plans.')
         with st.form('contribution_simulator'):
             left,right=st.columns(2)
             initial_value=left.number_input('Starting portfolio ($)',min_value=1.,value=1000.,step=100.)
