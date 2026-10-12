@@ -2,7 +2,7 @@
 
 **Understand where portfolio risk comes from, how a purchase changes it, and how to distribute a contribution under explicit constraints.**
 
-[Open the dashboard](https://portfolio-risk-eng-fwywewfctjzvsqsxvhmumt.streamlit.app/) · [Read the technical paper](docs/paper/portfolio-risk-engine.pdf) · [LaTeX source](docs/paper/portfolio-risk-engine.tex)
+[Open the dashboard](https://eshan-portfolio-risk-engine.streamlit.app/) · [Read the technical paper](docs/paper/portfolio-risk-engine.pdf) · [LaTeX source](docs/paper/portfolio-risk-engine.tex)
 
 A C++17 and Python research engine with a Streamlit interface. It combines historical covariance estimation, risk attribution, custom reverse-mode automatic differentiation, and constrained minimum-variance allocation. The dashboard makes those calculations accessible without requiring a local build.
 
