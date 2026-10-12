@@ -21,6 +21,8 @@ Start with **Synthetic example** to explore without credentials. For **Alpaca ma
 
 The engine estimates risk; it does not forecast prices or expected returns, select a personally suitable portfolio, or submit orders. Volatility is dispersion in returns, not an expected gain or a maximum possible loss.
 
+The Historical checks page includes a contribution-plan calculator. Set a starting amount, contribution amount, weekly/monthly/quarterly/yearly frequency, and duration in months. It replays the most recent supported historical period, compares optimized and equal-dollar purchases, and plots deposits separately from portfolio value. A month means 21 trading observations; contributions begin at the start. Results persist across theme changes and disappear when the submitted plan or dataset changes. This is a historical replay, not a future-value forecast.
+
 ## How the engine works
 
 ```mermaid

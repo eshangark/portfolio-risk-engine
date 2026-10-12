@@ -274,24 +274,54 @@ with history_tab:
                              'contribution':study['contribution'],'cap':study['cap'],'annualization':study['annualization']})
                 except ValueError as exc:
                     st.error(f'Study unavailable: {exc}')
-        with st.expander('Historical contribution backtest'):
-            st.write('Start with 1,000 hypothetical dollars equally divided among the selected assets. Every 21 observations, invest 200 dollars using the preceding 126 observations and Ledoit-Wolf covariance. Compare with equal-dollar purchases using identical cash flows.')
-            st.caption('Holdings drift with each daily return. All decisions precede the return being evaluated. Fees, taxes, spreads and executable prices are excluded. Provider dividend conventions and historical revisions limit the interpretation.')
-            if st.button('Run historical backtest'):
-                try:
-                    with st.spinner('Simulating chronological contributions…'):
-                        if prepared.dropped_return_dates:
-                            raise ValueError('Backtests require complete adjacent-session history; missing daily returns cannot be skipped.')
-                        backtest=contribution_backtest(returns)
-                    metrics=pd.DataFrame({name:backtest[name] for name in ('optimized','equal_purchases')}).T.rename(index={'optimized':'Minimum-variance purchases','equal_purchases':'Equal-dollar purchases'},columns={'terminal_wealth':'Ending value ($)','time_weighted_return':'Return excluding deposits','annualized_volatility':'Annual volatility','max_drawdown':'Largest decline'})
-                    show_frame(metrics,width='stretch',column_config={k:st.column_config.NumberColumn(format='percent') for k in ('Return excluding deposits','Annual volatility','Largest decline')})
-                    st.write(f"{backtest['observations']} evaluated observations; {len(backtest['decisions'])} contributions totaling {backtest['total_contributions']:,.2f} dollars.")
-                    ledger=pd.DataFrame(backtest['ledger']).set_index('date')
-                    chart_data=ledger[['wealth','equal_purchase_wealth']].rename(columns={'wealth':'Minimum-variance purchases','equal_purchase_wealth':'Equal-dollar purchases'}).reset_index().melt('date',var_name='Strategy',value_name='Value')
-                    show_chart(alt.Chart(chart_data).mark_line().encode(x=alt.X('date:T',title='Date'),y=alt.Y('Value:Q',title='Portfolio value ($)'),color=alt.Color('Strategy:N',scale=alt.Scale(range=['#70D0D8','#E8AA65'])),tooltip=['date:T','Strategy',alt.Tooltip('Value:Q',format=',.2f')]))
-                    st.caption('Terminal wealth includes deposits. Time-weighted return removes the direct effect of deposits; volatility and drawdown use the daily time-weighted return series.')
-                    st.json({k:v for k,v in backtest.items() if k not in ('ledger','decisions','optimized','equal_purchases')})
-                except ValueError as exc:
-                    st.error(f'Backtest unavailable: {exc}')
+        st.subheader('Simulate your contribution plan')
+        st.write('Choose a starting amount, regular contribution, frequency, and duration to replay your plan over recent market history. The engine compares minimum-variance purchases with splitting each contribution equally, using the same deposits and historical returns. Use the value chart and risk comparison to explore the tradeoffs; this is a historical simulation, not a forecast of what your savings will become.')
+        available_months=(len(returns)-126)//21
+        with st.form('contribution_simulator'):
+            left,right=st.columns(2)
+            initial_value=left.number_input('Starting portfolio ($)',min_value=1.,value=1000.,step=100.)
+            contribution=right.number_input('Amount per contribution ($)',min_value=0.,value=200.,step=50.)
+            frequency=left.selectbox('Contribution frequency',['Weekly','Monthly','Quarterly','Yearly'],index=1)
+            duration=right.number_input('Simulation duration (months)',min_value=1,max_value=max(1,available_months),value=min(12,max(1,available_months)),step=1)
+            st.caption('Trading-session convention: weekly = 5, monthly = 21, quarterly = 63, yearly = 252 observations. The first contribution is made at the start. Starting money is split equally across your selected assets; risk estimates use the preceding 126 observations and Ledoit–Wolf smoothing. There is no extra concentration cap beyond 100%.')
+            run_simulation=st.form_submit_button('Simulate contribution plan')
+        interval={'Weekly':5,'Monthly':21,'Quarterly':63,'Yearly':252}[frequency]
+        simulation_rows=int(duration)*21
+        signature=(prepared.identity,tuple(symbols),float(initial_value),float(contribution),frequency,int(duration))
+        if available_months<1:
+            st.info('Load a longer history lookback in the sidebar: this simulation needs 126 training observations plus at least 21 simulation observations.')
+        elif run_simulation:
+            st.session_state.pop('contribution_simulation',None)
+            try:
+                with st.spinner('Replaying your plan over historical returns…'):
+                    if prepared.dropped_return_dates:
+                        raise ValueError('Backtests require complete adjacent-session history; missing daily returns cannot be skipped.')
+                    selected_history=returns.iloc[-(126+simulation_rows):]
+                    backtest=contribution_backtest(selected_history,initial_value=initial_value,contribution=contribution,interval=interval)
+                st.session_state['contribution_simulation']=(signature,backtest)
+            except ValueError as exc:
+                st.error(f'Simulation unavailable: {exc}')
+        saved=st.session_state.get('contribution_simulation')
+        if saved is not None and saved[0]==signature and available_months>=1:
+            backtest=saved[1]
+            total_paid=backtest['initial_value']+backtest['total_contributions']
+            st.caption(f"Historical period: {pd.Timestamp(backtest['ledger'][0]['date']).date()} to {pd.Timestamp(backtest['ledger'][-1]['date']).date()}. {backtest['observations']} trading observations; {len(backtest['decisions'])} contributions.")
+            cols=st.columns(3)
+            cols[0].metric('Total money added',f'${total_paid:,.2f}')
+            cols[1].metric('Optimized ending value',f"${backtest['optimized']['terminal_wealth']:,.2f}")
+            cols[2].metric('Equal-purchase ending value',f"${backtest['equal_purchases']['terminal_wealth']:,.2f}")
+            ledger=pd.DataFrame(backtest['ledger']).set_index('date')
+            ledger['Total money added']=backtest['initial_value']+ledger['cumulative_deposits']
+            chart_data=ledger[['wealth','equal_purchase_wealth','Total money added']].rename(columns={'wealth':'Minimum-variance purchases','equal_purchase_wealth':'Equal-dollar purchases'}).reset_index().melt('date',var_name='Strategy',value_name='Value')
+            show_chart(alt.Chart(chart_data).mark_line().encode(x=alt.X('date:T',title='Date'),y=alt.Y('Value:Q',title='Portfolio value ($)'),color=alt.Color('Strategy:N',scale=alt.Scale(range=['#70D0D8','#E8AA65','#99A8B8'])),tooltip=['date:T','Strategy',alt.Tooltip('Value:Q',format=',.2f')]))
+            metrics=pd.DataFrame({name:backtest[name] for name in ('optimized','equal_purchases')}).T
+            metrics['Gain/loss beyond deposits ($)']=metrics['terminal_wealth']-total_paid
+            metrics=metrics.rename(index={'optimized':'Minimum-variance purchases','equal_purchases':'Equal-dollar purchases'},columns={'terminal_wealth':'Ending value ($)','time_weighted_return':'Return excluding deposits','annualized_volatility':'Annual volatility','max_drawdown':'Largest decline'})
+            show_frame(metrics,width='stretch',column_config={k:st.column_config.NumberColumn(format='percent') for k in ('Return excluding deposits','Annual volatility','Largest decline')})
+            st.caption('The deposits line separates money you put in from market gains or losses. Return excluding deposits measures investment performance; volatility measures return variability, and largest decline measures the fall from a previous peak of the return index. Fees, taxes, spreads, and execution are excluded. Historical revisions and provider dividend conventions limit interpretation.')
+            with st.expander('Simulation details and purchase schedule'):
+                show_frame(pd.DataFrame(backtest['decisions'])[['date','purchases']],width='stretch')
+                st.caption('Purchase amounts follow the selected asset order: '+', '.join(symbols))
+                st.json({k:v for k,v in backtest.items() if k not in ('ledger','decisions','optimized','equal_purchases')})
     else:
         st.info('Historical checks need market observations. Choose Alpaca market data in the sidebar and retrieve history to begin.')
